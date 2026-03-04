@@ -2,10 +2,12 @@ import React from 'react';
 import { useAppContext } from '../AppContext';
 import { QUARTERS, UNITS } from '../constants';
 import { Pill, UnitBadge, RankPos, AptoBadge, AvalText } from '../components/ui';
+import { useDashboardData } from '../hooks/useDashboardData';
 
 export const Dashboard: React.FC = () => {
-  const { curQ, curUnit, calcQ } = useAppContext();
-  const data = calcQ(curQ, curUnit);
+  const { curQ, curUnit, anoLetivoId } = useAppContext();
+  const dashboardQuery = useDashboardData(curUnit, curQ, anoLetivoId);
+  const data = dashboardQuery.data ?? [];
   const q = QUARTERS[curQ];
   const isCons = curUnit === 'CONS';
   const uLabel = isCons ? 'Consolidado — todas as unidades' : UNITS[curUnit].label;
@@ -62,6 +64,21 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {dashboardQuery.isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-10 w-full rounded-lg bg-[var(--surface)] animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {dashboardQuery.isError && (
+        <div className="rounded-xl border border-[var(--red)]/30 bg-[rgba(166,28,28,0.10)] p-4 text-sm text-[var(--txt)]">
+          Erro ao carregar dados do Supabase. Tente novamente em instantes.
+        </div>
+      )}
+
+      {!dashboardQuery.isLoading && !dashboardQuery.isError && (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
@@ -119,6 +136,7 @@ export const Dashboard: React.FC = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

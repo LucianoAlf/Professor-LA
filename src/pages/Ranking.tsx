@@ -2,10 +2,12 @@ import React from 'react';
 import { useAppContext } from '../AppContext';
 import { QUARTERS, UNITS } from '../constants';
 import { Pill, UnitBadge, RankPos, AptoBadge, AvalText } from '../components/ui';
+import { useDashboardData } from '../hooks/useDashboardData';
 
 export const Ranking: React.FC = () => {
-  const { curQ, curUnit, calcQ } = useAppContext();
-  const data = calcQ(curQ, curUnit);
+  const { curQ, curUnit, anoLetivoId } = useAppContext();
+  const rankingQuery = useDashboardData(curUnit, curQ, anoLetivoId);
+  const data = rankingQuery.data ?? [];
   const q = QUARTERS[curQ];
   const isCons = curUnit === 'CONS';
 
@@ -23,6 +25,21 @@ export const Ranking: React.FC = () => {
         </div>
       </div>
 
+      {rankingQuery.isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-10 w-full rounded-lg bg-[var(--surface)] animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {rankingQuery.isError && (
+        <div className="rounded-xl border border-[var(--red)]/30 bg-[rgba(166,28,28,0.10)] p-4 text-sm text-[var(--txt)]">
+          Erro ao carregar o ranking. Tente novamente.
+        </div>
+      )}
+
+      {!rankingQuery.isLoading && !rankingQuery.isError && (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
@@ -69,6 +86,7 @@ export const Ranking: React.FC = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

@@ -2,10 +2,12 @@ import React from 'react';
 import { useAppContext } from '../AppContext';
 import { UNITS } from '../constants';
 import { Pill, UnitBadge, RankPos, AvalText } from '../components/ui';
+import { useAnnualData } from '../hooks/useAnnualData';
 
 export const Anual: React.FC = () => {
-  const { curUnit, calcAnn, calcQUnit } = useAppContext();
-  const data = calcAnn(curUnit);
+  const { curUnit, anoLetivoId } = useAppContext();
+  const annualQuery = useAnnualData(curUnit, anoLetivoId);
+  const data = annualQuery.data ?? [];
   const isCons = curUnit === 'CONS';
   const units = isCons ? ['CG', 'RC', 'BA'] : [curUnit];
 
@@ -30,14 +32,16 @@ export const Anual: React.FC = () => {
               📈 {UNITS[uid].label}
             </div>
             {(['Q1', 'Q2', 'Q3'] as const).map(qc => {
-              const best = calcQUnit(qc, uid)[0];
+              const best = data
+                .filter((item) => item.uid === uid)
+                .sort((a, b) => (b[`hs${qc}` as 'hsQ1' | 'hsQ2' | 'hsQ3'] - a[`hs${qc}` as 'hsQ1' | 'hsQ2' | 'hsQ3']))[0];
               return (
                 <div key={qc} className="flex justify-between items-center py-2 border-b border-[var(--border)] last:border-b-0">
                   <div className="text-[13px] font-semibold text-[var(--txt)]">
-                    <span className="text-[var(--gold)] mr-1.5">🏆 {qc}</span>{best.name}
+                    <span className="text-[var(--gold)] mr-1.5">🏆 {qc}</span>{best?.name ?? '—'}
                   </div>
-                  <div className={`font-mono text-[13px] font-bold ${best.hs >= 80 ? 'text-[var(--green)]' : best.hs >= 60 ? 'text-[var(--gold)]' : 'text-[var(--red)]'}`}>
-                    {best.hs.toFixed(1)}
+                  <div className={`font-mono text-[13px] font-bold ${(best?.[`hs${qc}` as 'hsQ1' | 'hsQ2' | 'hsQ3'] ?? 0) >= 80 ? 'text-[var(--green)]' : (best?.[`hs${qc}` as 'hsQ1' | 'hsQ2' | 'hsQ3'] ?? 0) >= 60 ? 'text-[var(--gold)]' : 'text-[var(--red)]'}`}>
+                    {(best?.[`hs${qc}` as 'hsQ1' | 'hsQ2' | 'hsQ3'] ?? 0).toFixed(1)}
                   </div>
                 </div>
               );
@@ -57,6 +61,21 @@ export const Anual: React.FC = () => {
         </div>
       </div>
 
+      {annualQuery.isLoading && (
+        <div className="space-y-2 mb-4">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-10 w-full rounded-lg bg-[var(--surface)] animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {annualQuery.isError && (
+        <div className="rounded-xl border border-[var(--red)]/30 bg-[rgba(166,28,28,0.10)] p-4 text-sm text-[var(--txt)] mb-4">
+          Erro ao carregar dados anuais do Supabase. Tente novamente.
+        </div>
+      )}
+
+      {!annualQuery.isLoading && !annualQuery.isError && (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
@@ -99,6 +118,7 @@ export const Anual: React.FC = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };
