@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer base {
+  :root {
+    --bg: #0A1628;
+    --bg2: rgba(10,22,40,.95);
+    --bg3: rgba(10,22,40,.6);
+    --surface: rgba(255,255,255,.04);
+    --surface2: rgba(255,255,255,.07);
+    --border: rgba(255,255,255,.08);
+    --border2: rgba(255,255,255,.07);
+    --txt: #fff;
+    --txt2: rgba(255,255,255,.65);
+    --txt3: rgba(255,255,255,.38);
+    --txt4: rgba(255,255,255,.22);
+    --ink: #0A1628;
+    --ink2: #1C3461;
+    --ink3: #2D5AA0;
+    --gold: #C8973A;
+    --goldD: #9A6F1E;
+    --goldP: #FBF6EC;
+    --green: #1A6E42;
+    --greenL: #E4F3EC;
+    --red: #A61C1C;
+    --redL: #FAEAEA;
+    --orange: #B85C00;
+    --orangeL: #FFF3E8;
+    --g1: #F1F5FB;
+    --g2: #E4EBF7;
+    --sb-sec: rgba(255,255,255,.22);
+    --sb-item: rgba(255,255,255,.48);
+    --sb-hover: rgba(255,255,255,.04);
+    --sb-active: rgba(200,151,58,.08);
+    --input-bg: rgba(45,90,160,.14);
+    --input-border: rgba(45,90,160,.28);
+    --input-color: #7EB9FF;
+    --pdi-bg: rgba(184,92,0,.1);
+    --pdi-border: rgba(184,92,0,.28);
+    --grid-line: rgba(255,255,255,.018);
+    --btn-ghost-bg: rgba(255,255,255,.06);
+    --btn-ghost-color: rgba(255,255,255,.55);
+    --btn-ghost-border: rgba(255,255,255,.1);
+    --btn-ghost-hover: rgba(255,255,255,.1);
+  }
+
+  .light {
+    --bg: #F5F0E8;
+    --bg2: #EDE8DF;
+    --bg3: rgba(237,232,223,.92);
+    --surface: rgba(255,255,255,.7);
+    --surface2: rgba(200,151,58,.08);
+    --border: rgba(0,0,0,.08);
+    --border2: rgba(0,0,0,.07);
+    --txt: #1A2D4A;
+    --txt2: #3D5270;
+    --txt3: #6B7FA0;
+    --txt4: #9aaac0;
+    --ink: #0A1628;
+    --sb-sec: #9aaac0;
+    --sb-item: #3D5270;
+    --sb-hover: rgba(200,151,58,.08);
+    --sb-active: rgba(200,151,58,.12);
+    --input-bg: rgba(45,90,160,.07);
+    --input-border: rgba(45,90,160,.2);
+    --input-color: #2D5AA0;
+    --pdi-bg: rgba(184,92,0,.07);
+    --pdi-border: rgba(184,92,0,.2);
+    --grid-line: rgba(0,0,0,.03);
+    --btn-ghost-bg: rgba(0,0,0,.05);
+    --btn-ghost-color: #3D5270;
+    --btn-ghost-border: rgba(0,0,0,.1);
+    --btn-ghost-hover: rgba(0,0,0,.08);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--txt);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse 80% 50% at 5% 10%, rgba(200,151,58,.07) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 70% at 95% 80%, rgba(45,90,160,.1) 0%, transparent 55%);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 52px 52px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
