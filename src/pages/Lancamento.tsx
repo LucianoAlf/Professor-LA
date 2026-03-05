@@ -11,14 +11,18 @@ import { useTrimestreByCodigo, useUnidadeByCodigo } from '../hooks/useSelectionD
 interface LancamentoFormItem {
   professorUnidadeId: string;
   professorNome: string;
-  alunosRenovacaoTotal: number;
-  alunosRenovacaoOk: number;
-  experimentaisTotal: number;
-  experimentaisMatricula: number;
-  totalTurmas: number;
-  totalAlunosTurmas: number;
+  taxaRetencao: number;
+  taxaConversao: number;
+  mediaTurma: number;
+  qtdAlunos: number;
   notaProf360: number;
+  observacoes: string;
 }
+
+const round = (value: number, decimals = 1) => {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+};
 
 export const Lancamento: React.FC = () => {
   const { curUnit, curMonth, setCurMonth, curQ, anoLetivoId, cfg } = useAppContext();
@@ -43,13 +47,27 @@ export const Lancamento: React.FC = () => {
         return {
           professorUnidadeId: prof.id,
           professorNome: prof.professor.nome,
-          alunosRenovacaoTotal: atual?.alunos_renovacao_total ?? 0,
-          alunosRenovacaoOk: atual?.alunos_renovacao_ok ?? 0,
-          experimentaisTotal: atual?.experimentais_total ?? 0,
-          experimentaisMatricula: atual?.experimentais_matricula ?? 0,
-          totalTurmas: atual?.total_turmas ?? 0,
-          totalAlunosTurmas: atual?.total_alunos_turmas ?? 0,
+          taxaRetencao:
+            typeof atual?.taxa_retencao === 'number'
+              ? round(atual.taxa_retencao * 100, 1)
+              : (atual?.alunos_renovacao_total ?? 0) > 0
+              ? round(((atual?.alunos_renovacao_ok ?? 0) / (atual?.alunos_renovacao_total ?? 1)) * 100, 1)
+              : 0,
+          taxaConversao:
+            typeof atual?.taxa_conversao === 'number'
+              ? round(atual.taxa_conversao * 100, 1)
+              : (atual?.experimentais_total ?? 0) > 0
+              ? round(((atual?.experimentais_matricula ?? 0) / (atual?.experimentais_total ?? 1)) * 100, 1)
+              : 0,
+          mediaTurma:
+            typeof atual?.media_turma === 'number'
+              ? round(atual.media_turma, 2)
+              : (atual?.total_turmas ?? 0) > 0
+              ? round((atual?.total_alunos_turmas ?? 0) / (atual?.total_turmas ?? 1), 2)
+              : 0,
+          qtdAlunos: atual?.qtd_alunos ?? atual?.total_alunos_turmas ?? 0,
           notaProf360: atual?.nota_prof360 ?? 0,
+          observacoes: atual?.observacoes ?? '',
         };
       })
     );
@@ -83,11 +101,27 @@ export const Lancamento: React.FC = () => {
   };
 
   const handleChange = (index: number, field: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
+    const numValue = Number(value) || 0;
     setFormRows((prev) =>
       prev.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: numValue } : row))
     );
   };
+
+  const handleTextChange = (index: number, value: string) => {
+    setFormRows((prev) =>
+      prev.map((row, rowIndex) => (rowIndex === index ? { ...row, observacoes: value } : row))
+    );
+  };
+
+  const groupAvg = formRows.length
+    ? {
+        ret: formRows.reduce((acc, row) => acc + row.taxaRetencao, 0) / formRows.length,
+        conv: formRows.reduce((acc, row) => acc + row.taxaConversao, 0) / formRows.length,
+        media: formRows.reduce((acc, row) => acc + row.mediaTurma, 0) / formRows.length,
+        nota360: formRows.reduce((acc, row) => acc + row.notaProf360, 0) / formRows.length,
+        alunos: formRows.reduce((acc, row) => acc + row.qtdAlunos, 0) / formRows.length,
+      }
+    : { ret: 0, conv: 0, media: 0, nota360: 0, alunos: 0 };
 
   return (
     <div className="animate-[fadeIn_0.25s_ease] p-5 md:px-7 md:py-6 pb-12">
@@ -146,39 +180,47 @@ export const Lancamento: React.FC = () => {
           <div key={row.professorUnidadeId} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden mb-3">
             <div className="bg-[rgba(45,90,160,0.12)] px-4 py-3 flex justify-between items-center">
               <h3 className="text-sm font-bold text-[var(--txt)]">{row.professorNome}</h3>
-              <span className="text-[11px] text-[var(--txt3)]">{curMonth} · {UNITS[uid].label} · {row.totalAlunosTurmas} alunos</span>
+              <span className="text-[11px] text-[var(--txt3)]">{curMonth} · {UNITS[uid].label} · {row.qtdAlunos} alunos</span>
             </div>
             <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,1fr)_1.8fr] gap-2.5">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Renov. Total</label>
-                <input type="number" min="0" value={row.alunosRenovacaoTotal} onChange={(e) => handleChange(i, 'alunosRenovacaoTotal', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Retenção %</label>
+                <input type="number" min="0" max="100" step="0.1" value={row.taxaRetencao} onChange={(e) => handleChange(i, 'taxaRetencao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Renov. OK</label>
-                <input type="number" min="0" value={row.alunosRenovacaoOk} onChange={(e) => handleChange(i, 'alunosRenovacaoOk', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Conversão %</label>
+                <input type="number" min="0" max="100" step="0.1" value={row.taxaConversao} onChange={(e) => handleChange(i, 'taxaConversao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Experim. Total</label>
-                <input type="number" min="0" value={row.experimentaisTotal} onChange={(e) => handleChange(i, 'experimentaisTotal', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Média/Turma</label>
+                <input type="number" min="0" step="0.1" value={row.mediaTurma} onChange={(e) => handleChange(i, 'mediaTurma', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Experim. Matric.</label>
-                <input type="number" min="0" value={row.experimentaisMatricula} onChange={(e) => handleChange(i, 'experimentaisMatricula', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Nota 360</label>
+                <input type="number" min="0" max="100" value={row.notaProf360} onChange={(e) => handleChange(i, 'notaProf360', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Qtd Turmas</label>
-                <input type="number" min="0" value={row.totalTurmas} onChange={(e) => handleChange(i, 'totalTurmas', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Qtd Alunos</label>
+                <input type="number" min="0" value={row.qtdAlunos} onChange={(e) => handleChange(i, 'qtdAlunos', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Nota 360 / Total Alunos</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="number" min="0" max="100" value={row.notaProf360} onChange={(e) => handleChange(i, 'notaProf360', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
-                  <input type="number" min="0" value={row.totalAlunosTurmas} onChange={(e) => handleChange(i, 'totalAlunosTurmas', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
-                </div>
+                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Observações</label>
+                <input type="text" value={row.observacoes} onChange={(e) => handleTextChange(i, e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
             </div>
           </div>
         ))}
+
+        <div className="bg-[rgba(45,90,160,0.08)] border border-[var(--border)] rounded-xl p-4">
+          <div className="text-xs font-bold text-[var(--txt)] mb-2">Média do grupo — {curMonth}</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs font-mono text-[var(--txt2)]">
+            <div>Retenção: {groupAvg.ret.toFixed(1)}%</div>
+            <div>Conversão: {groupAvg.conv.toFixed(1)}%</div>
+            <div>Média/Turma: {groupAvg.media.toFixed(2)}</div>
+            <div>Nota 360: {groupAvg.nota360.toFixed(1)}</div>
+            <div>Qtd Alunos: {groupAvg.alunos.toFixed(0)}</div>
+          </div>
+        </div>
       </div>
       )}
 

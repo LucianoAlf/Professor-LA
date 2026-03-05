@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppContext } from '../AppContext';
-import { BarChart2, Trophy, Calendar, Inbox, Target, Settings, ClipboardList } from 'lucide-react';
+import { BarChart2, Trophy, Calendar, Inbox, Target, Settings, ClipboardList, UserPlus } from 'lucide-react';
 import { QUARTERS } from '../constants';
 
 export const Sidebar: React.FC = () => {
@@ -12,6 +12,7 @@ export const Sidebar: React.FC = () => {
     { id: 'anual', label: 'Resultado Anual', icon: Calendar },
     { id: 'lancamento', label: 'Lançamento Mensal', icon: Inbox, sec: 'Operação' },
     { id: 'pdi', label: 'PDI Trimestral', icon: Target },
+    { id: 'professores', label: 'Cadastro Professores', icon: UserPlus },
     { id: 'config', label: 'Configurações', icon: Settings, sec: 'Sistema' },
     { id: 'instrucoes', label: 'Instruções', icon: ClipboardList },
   ];

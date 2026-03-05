@@ -86,9 +86,11 @@ export const Anual: React.FC = () => {
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">HS Q2</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">HS Q3</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">HS Anual</th>
+              <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">vs 80</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Ret. Anual</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Conv. Anual</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">PDI Anual</th>
+              <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Status 360</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Avaliação</th>
             </tr>
           </thead>
@@ -109,9 +111,25 @@ export const Anual: React.FC = () => {
                     {d.hsAnn.toFixed(1)}
                   </span>
                 </td>
+                <td className="px-2.5 py-3 align-middle">
+                  <span className={`font-mono text-xs ${d.hsAnn >= 80 ? 'text-[#1A6E42]' : 'text-[#A61C1C]'}`}>
+                    {d.hsAnn >= 80 ? '+' : ''}{(d.hsAnn - 80).toFixed(1)}
+                  </span>
+                </td>
                 <td className="px-2.5 py-3 align-middle font-mono text-xs">{(d.retAnn * 100).toFixed(1)}%</td>
                 <td className="px-2.5 py-3 align-middle font-mono text-xs">{(d.convAnn * 100).toFixed(1)}%</td>
                 <td className="px-2.5 py-3 align-middle"><Pill value={d.pdiAnn} type="pdi" /></td>
+                <td className="px-2.5 py-3 align-middle">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                    d.status360 === 'apto'
+                      ? 'bg-[rgba(26,110,66,0.14)] text-[#1A6E42] border-[rgba(26,110,66,0.25)]'
+                      : d.status360 === 'inapto'
+                      ? 'bg-[rgba(166,28,28,0.12)] text-[#A61C1C] border-[rgba(166,28,28,0.22)]'
+                      : 'bg-[rgba(200,151,58,0.14)] text-[var(--goldD)] border-[rgba(200,151,58,0.24)]'
+                  }`}>
+                    {d.status360 === 'apto' ? '✅ Apto Anual' : d.status360 === 'inapto' ? '❌ Inapto Anual' : '⚠️ Ver trimestres'}
+                  </span>
+                </td>
                 <td className="px-2.5 py-3 align-middle"><AvalText hs={d.hsAnn} /></td>
               </tr>
             ))}

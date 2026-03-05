@@ -39,30 +39,42 @@ export interface ConfigPesos {
   peso_conversao: number
   peso_media_turma: number
   peso_pdi: number
-  benchmark_media_min: number
-  benchmark_media_max: number
-  corte_prof360: number
+  peso_extra?: number
+  benchmark_retencao?: number
+  benchmark_conversao?: number
+  media_turma_min?: number
+  media_turma_max?: number
+  nota_corte_360?: number
+  // Campos legados (compatibilidade)
+  benchmark_media_min?: number
+  benchmark_media_max?: number
+  corte_prof360?: number
 }
 
 export interface LancamentoMensal {
   id?: string
   professor_unidade_id: string
-  ano_letivo_id: string
-  mes: string
+  ano: number
+  mes: number
   alunos_renovacao_total: number
   alunos_renovacao_ok: number
   experimentais_total: number
   experimentais_matricula: number
   total_turmas: number
   total_alunos_turmas: number
-  nota_prof360: number
+  taxa_retencao?: number | null
+  taxa_conversao?: number | null
+  media_turma?: number | null
+  qtd_alunos?: number | null
+  nota_prof360: number | null
+  observacoes?: string | null
 }
 
 export interface PdiTrimestral {
   id?: string
   professor_unidade_id: string
   trimestre_id: string
-  nota_pdi: number
+  nota: number
 }
 
 export interface HealthScore {
@@ -73,6 +85,7 @@ export interface HealthScore {
   score_conversao: number
   score_media_turma: number
   score_pdi: number
+  score_extra?: number
   health_score: number
   apto_prof360: boolean
   ranking_unidade?: number | null

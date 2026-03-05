@@ -17,6 +17,7 @@ export interface AnnualItem {
   retAnn: number
   convAnn: number
   pdiAnn: number
+  status360: 'apto' | 'alerta' | 'inapto'
 }
 
 export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
@@ -51,10 +52,20 @@ export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
 
       if (hsAnualError) throw hsAnualError
 
+      const { data: trimestresAno, error: trimestresAnoError } = await supabase
+        .from('trimestres')
+        .select('id')
+        .eq('ano_letivo_id', anoLetivoId)
+
+      if (trimestresAnoError) throw trimestresAnoError
+
+      const trimestreIds = (trimestresAno ?? []).map((item: any) => item.id)
+
       const { data: hsTri, error: hsTriError } = await supabase
         .from('health_scores')
-        .select('professor_unidade_id, score_retencao, score_conversao, score_pdi')
+        .select('professor_unidade_id, trimestre_id, score_retencao, score_conversao, score_pdi, apto_prof360')
         .in('professor_unidade_id', puIds)
+        .in('trimestre_id', trimestreIds)
 
       if (hsTriError) throw hsTriError
 
@@ -73,9 +84,23 @@ export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
         return acc
       }, {})
 
+      const aptoAgg = (hsTri ?? []).reduce((acc: Record<string, { aptos: number; total: number }>, item: any) => {
+        const key = item.professor_unidade_id
+        if (!acc[key]) {
+          acc[key] = { aptos: 0, total: 0 }
+        }
+        acc[key].total += 1
+        if (item.apto_prof360) {
+          acc[key].aptos += 1
+        }
+        return acc
+      }, {})
+
       const result = (hsAnual ?? []).map((item: any) => {
         const pu = puMap.get(item.professor_unidade_id)
         const avg = scoreAgg[item.professor_unidade_id] ?? { ret: 0, conv: 0, pdi: 0, count: 1 }
+        const apto = aptoAgg[item.professor_unidade_id] ?? { aptos: 0, total: 0 }
+        const status360: AnnualItem['status360'] = apto.aptos === 3 ? 'apto' : apto.aptos === 0 ? 'inapto' : 'alerta'
 
         return {
           rank: 0,
@@ -88,6 +113,7 @@ export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
           retAnn: avg.count > 0 ? avg.ret / avg.count / 100 : 0,
           convAnn: avg.count > 0 ? avg.conv / avg.count / 100 : 0,
           pdiAnn: avg.count > 0 ? avg.pdi / avg.count : 0,
+          status360,
         }
       })
 

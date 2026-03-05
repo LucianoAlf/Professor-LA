@@ -36,7 +36,7 @@ export const PDI: React.FC = () => {
       professoresQuery.data.map((prof) => ({
         professorUnidadeId: prof.id,
         professorNome: prof.professor.nome,
-        notaPdi: pdiByProfessorUnidade.get(prof.id)?.nota_pdi ?? 0,
+        notaPdi: pdiByProfessorUnidade.get(prof.id)?.nota ?? 0,
       }))
     );
   }, [professoresQuery.data, pdiQuery.data]);

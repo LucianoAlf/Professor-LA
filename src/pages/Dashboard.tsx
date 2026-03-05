@@ -89,6 +89,7 @@ export const Dashboard: React.FC = () => {
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Conversão</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Média/Turma</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">PDI</th>
+              <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">KPI Extra</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Health Score</th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]"></th>
               <th className="px-2.5 py-2 text-left text-[10px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold border-b border-[var(--border)]">Prof. 360</th>
@@ -111,6 +112,7 @@ export const Dashboard: React.FC = () => {
                 <td className="px-2.5 py-3 align-middle"><Pill value={d.sC} /></td>
                 <td className="px-2.5 py-3 align-middle"><Pill value={d.sM} /></td>
                 <td className="px-2.5 py-3 align-middle"><Pill value={d.sP} type="pdi" /></td>
+                <td className="px-2.5 py-3 align-middle"><Pill value={d.sE} /></td>
                 <td className="px-2.5 py-3 align-middle">
                   <div className="flex items-center gap-2">
                     <span className={`inline-block px-3 py-1.5 rounded-full text-[13px] font-bold font-mono border ${d.hs >= 80 ? 'bg-[rgba(26,110,66,0.14)] text-[#1A6E42] border-[rgba(26,110,66,0.25)] light:text-[#4AE88A]' : d.hs >= 60 ? 'bg-[rgba(200,151,58,0.14)] text-[var(--goldD)] border-[rgba(200,151,58,0.24)] light:text-[var(--gold)]' : 'bg-[rgba(166,28,28,0.12)] text-[#A61C1C] border-[rgba(166,28,28,0.22)] light:text-[#FF8080]'}`}>

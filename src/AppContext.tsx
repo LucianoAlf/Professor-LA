@@ -4,6 +4,11 @@ import { useAppStore } from './store/useAppStore'
 import { useAnoLetivoAtual } from './hooks/useAnosLetivos'
 import { useConfigPesos } from './hooks/useConfigPesos'
 
+const normalizeWeight = (value?: number) => {
+  const raw = value ?? 0
+  return raw > 1 ? raw / 100 : raw
+}
+
 interface AppContextType {
   curQ: QuarterId
   setCurQ: (q: QuarterId) => void
@@ -48,16 +53,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const cfg = useMemo<Config>(() => {
     const pesos = configPesos.data
+    const mediaMin = pesos?.media_turma_min ?? pesos?.benchmark_media_min ?? 1
+    const mediaMax = pesos?.media_turma_max ?? pesos?.benchmark_media_max ?? 2.5
+    const corte360 = pesos?.nota_corte_360 ?? pesos?.corte_prof360 ?? 80
+
     return {
       weights: {
-        ret: pesos?.peso_retencao ?? 0.35,
-        conv: pesos?.peso_conversao ?? 0.25,
-        media: pesos?.peso_media_turma ?? 0.25,
-        pdi: pesos?.peso_pdi ?? 0.15,
+        ret: normalizeWeight(pesos?.peso_retencao ?? 35),
+        conv: normalizeWeight(pesos?.peso_conversao ?? 25),
+        media: normalizeWeight(pesos?.peso_media_turma ?? 25),
+        pdi: normalizeWeight(pesos?.peso_pdi ?? 15),
       },
-      mediaMin: pesos?.benchmark_media_min ?? 1,
-      mediaMax: pesos?.benchmark_media_max ?? 2.5,
-      corte360: pesos?.corte_prof360 ?? 80,
+      mediaMin,
+      mediaMax,
+      corte360,
     }
   }, [configPesos.data])
 

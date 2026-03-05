@@ -10,6 +10,9 @@ import { Lancamento } from './pages/Lancamento';
 import { PDI } from './pages/PDI';
 import { Config } from './pages/Config';
 import { Instrucoes } from './pages/Instrucoes';
+import { Login } from './pages/Login';
+import { Professores } from './pages/Professores';
+import { useAuth } from './hooks/useAuth';
 
 const MainContent: React.FC = () => {
   const { activePage, sbOpen } = useAppContext();
@@ -26,6 +29,7 @@ const MainContent: React.FC = () => {
         {activePage === 'lancamento' && <Lancamento />}
         {activePage === 'pdi' && <PDI />}
         {activePage === 'config' && <Config />}
+        {activePage === 'professores' && <Professores />}
         {activePage === 'instrucoes' && <Instrucoes />}
       </div>
     </div>
@@ -33,6 +37,20 @@ const MainContent: React.FC = () => {
 };
 
 export default function App() {
+  const { session, isLoading, signIn } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-[var(--txt2)]">
+        Carregando autenticação...
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Login onSubmit={signIn} />;
+  }
+
   return (
     <AppProvider>
       <MainContent />

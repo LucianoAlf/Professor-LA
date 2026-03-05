@@ -14,13 +14,43 @@ export interface RankingItem {
   sC: number
   sM: number
   sP: number
+  sE: number
   hs: number
   apto: boolean
   aAl: number
   aMedia: number
+  monthly: Array<{
+    mes: number
+    ret: number
+    conv: number
+    media: number
+    nota360: number
+  }>
 }
 
 const CONSOLIDADO_UNITS = ['CG', 'RC', 'BA']
+const MONTH_TO_NUMBER: Record<string, number> = {
+  Mar: 3,
+  Abr: 4,
+  Mai: 5,
+  Jun: 6,
+  Jul: 7,
+  Ago: 8,
+  Set: 9,
+  Out: 10,
+  Nov: 11,
+}
+
+async function resolveAnoByAnoLetivoId(anoLetivoId: string) {
+  const { data, error } = await supabase
+    .from('anos_letivos')
+    .select('ano')
+    .eq('id', anoLetivoId)
+    .single()
+
+  if (error) throw error
+  return data.ano as number
+}
 
 export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoLetivoId?: string) {
   const unidades = useUnidades()
@@ -40,6 +70,7 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
     enabled: Boolean(anoLetivoId && trimestreId && unidadeIds.length),
     queryFn: async () => {
       const unidadeIdList = unidadeIds.map((item) => item.id)
+      const ano = await resolveAnoByAnoLetivoId(anoLetivoId as string)
 
       const { data: professorUnidade, error: professorUnidadeError } = await supabase
         .from('professor_unidade')
@@ -53,18 +84,18 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
 
       const { data: healthScores, error: healthScoresError } = await supabase
         .from('health_scores')
-        .select('*')
+        .select('professor_unidade_id, score_retencao, score_conversao, score_media_turma, score_pdi, score_extra, health_score, apto_prof360')
         .eq('trimestre_id', trimestreId)
         .in('professor_unidade_id', puIds)
 
       if (healthScoresError) throw healthScoresError
 
-      const meses = QUARTERS[curQ].months
+      const meses = QUARTERS[curQ].months.map((mes) => MONTH_TO_NUMBER[mes]).filter(Boolean)
 
       const { data: lancamentos, error: lancamentosError } = await supabase
         .from('lancamentos_mensais')
-        .select('professor_unidade_id, total_turmas, total_alunos_turmas')
-        .eq('ano_letivo_id', anoLetivoId)
+        .select('professor_unidade_id, mes, taxa_retencao, taxa_conversao, media_turma, qtd_alunos, nota_prof360')
+        .eq('ano', ano)
         .in('mes', meses)
         .in('professor_unidade_id', puIds)
 
@@ -72,13 +103,31 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
 
       const puMap = new Map((professorUnidade ?? []).map((item: any) => [item.id, item]))
 
-      const lancamentosAgg = (lancamentos ?? []).reduce((acc: Record<string, { alunos: number; turmas: number }>, item: any) => {
+      const lancamentosAgg = (lancamentos ?? []).reduce((acc: Record<string, { alunos: number; mediaSum: number; mediaCount: number }>, item: any) => {
         const key = item.professor_unidade_id
         if (!acc[key]) {
-          acc[key] = { alunos: 0, turmas: 0 }
+          acc[key] = { alunos: 0, mediaSum: 0, mediaCount: 0 }
         }
-        acc[key].alunos += item.total_alunos_turmas ?? 0
-        acc[key].turmas += item.total_turmas ?? 0
+        acc[key].alunos += item.qtd_alunos ?? 0
+        if (typeof item.media_turma === 'number') {
+          acc[key].mediaSum += item.media_turma
+          acc[key].mediaCount += 1
+        }
+        return acc
+      }, {})
+
+      const monthlyByProfessor = (lancamentos ?? []).reduce((acc: Record<string, RankingItem['monthly']>, item: any) => {
+        const key = item.professor_unidade_id
+        if (!acc[key]) {
+          acc[key] = []
+        }
+        acc[key].push({
+          mes: item.mes,
+          ret: (item.taxa_retencao ?? 0) * 100,
+          conv: (item.taxa_conversao ?? 0) * 100,
+          media: item.media_turma ?? 0,
+          nota360: item.nota_prof360 ?? 0,
+        })
         return acc
       }, {})
 
@@ -86,7 +135,7 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
 
       const result = (healthScores ?? []).map((score: any) => {
         const pu = puMap.get(score.professor_unidade_id)
-        const agg = lancamentosAgg[score.professor_unidade_id] ?? { alunos: 0, turmas: 0 }
+        const agg = lancamentosAgg[score.professor_unidade_id] ?? { alunos: 0, mediaSum: 0, mediaCount: 0 }
 
         return {
           rank: 0,
@@ -96,10 +145,12 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
           sC: score.score_conversao ?? 0,
           sM: score.score_media_turma ?? 0,
           sP: score.score_pdi ?? 0,
+          sE: score.score_extra ?? 0,
           hs: score.health_score ?? 0,
           apto: Boolean(score.apto_prof360),
           aAl: agg.alunos,
-          aMedia: agg.turmas > 0 ? agg.alunos / agg.turmas : 0,
+          aMedia: agg.mediaCount > 0 ? agg.mediaSum / agg.mediaCount : 0,
+          monthly: (monthlyByProfessor[score.professor_unidade_id] ?? []).sort((a, b) => a.mes - b.mes),
         }
       })
 

@@ -2,10 +2,15 @@ import React, { useEffect } from 'react';
 import { useAppContext } from '../AppContext';
 import { QUARTERS } from '../constants';
 import { QuarterId } from '../types';
-import { Menu, Sun, Moon } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export const Topbar: React.FC = () => {
   const { sbOpen, setSbOpen, curQ, setCurQ, setCurMonth, isLight, setIsLight } = useAppContext();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const handleQuarterChange = (q: QuarterId) => {
     setCurQ(q);
@@ -54,6 +59,13 @@ export const Topbar: React.FC = () => {
           title="Alternar tema"
         >
           {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+        </button>
+        <button
+          onClick={handleLogout}
+          className="bg-[var(--surface)] border border-[var(--border)] rounded-full p-1.5 cursor-pointer transition-all duration-150 hover:border-[var(--gold)] text-[var(--txt)]"
+          title="Sair"
+        >
+          <LogOut className="w-4 h-4" />
         </button>
         <div className="w-2 h-2 bg-[#4AE88A] rounded-full shadow-[0_0_8px_#4AE88A]"></div>
       </div>
