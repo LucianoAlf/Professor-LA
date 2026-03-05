@@ -149,11 +149,22 @@ export function useSaveLancamentosMutation() {
         nota_prof360: row.notaProf360,
       }))
 
-      const { error } = await supabase
-        .from('lancamentos_mensais')
-        .upsert(payload, { onConflict: 'professor_unidade_id,ano,mes' })
+      for (const item of payload) {
+        const { data: updatedRows, error: updateError } = await supabase
+          .from('lancamentos_mensais')
+          .update(item)
+          .eq('professor_unidade_id', item.professor_unidade_id)
+          .eq('ano', item.ano)
+          .eq('mes', item.mes)
+          .select('id')
 
-      if (error) throw error
+        if (updateError) throw updateError
+
+        if (!updatedRows || updatedRows.length === 0) {
+          const { error: insertError } = await supabase.from('lancamentos_mensais').insert(item)
+          if (insertError) throw insertError
+        }
+      }
 
       await recalculateAndPersistHealthScores(
         ano,
