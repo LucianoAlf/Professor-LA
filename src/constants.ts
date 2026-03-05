@@ -21,6 +21,18 @@ export const QUARTERS: Record<QuarterId, { label: string; months: MonthId[]; nam
 
 export const ALL_MONTHS: MonthId[] = ["Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov"];
 
+export const MONTH_TO_NUMBER: Record<string, number> = {
+  Mar: 3,
+  Abr: 4,
+  Mai: 5,
+  Jun: 6,
+  Jul: 7,
+  Ago: 8,
+  Set: 9,
+  Out: 10,
+  Nov: 11,
+};
+
 export const INITIAL_CFG = {
   weights: { ret: 0.35, conv: 0.25, media: 0.25, pdi: 0.15 },
   mediaMin: 1.0,

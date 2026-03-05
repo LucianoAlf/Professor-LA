@@ -156,6 +156,10 @@ export function calcHealthScore(
         acc.mediaTurmaSum += item.media_turma
         acc.mediaTurmaCount += 1
       }
+      if (typeof item.qtd_alunos === 'number') {
+        acc.qtdAlunosSum += item.qtd_alunos
+        acc.qtdAlunosCount += 1
+      }
       return acc
     },
     {

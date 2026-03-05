@@ -1,30 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { MONTH_TO_NUMBER } from '../constants'
 import { supabase } from '../lib/supabase'
+import { resolveAnoByAnoLetivoId } from '../lib/resolveAno'
 import { LancamentoMensal } from '../types/database'
 import { useProfessoresByUnidade } from './useProfessoresByUnidade'
-
-const MONTH_TO_NUMBER: Record<string, number> = {
-  Mar: 3,
-  Abr: 4,
-  Mai: 5,
-  Jun: 6,
-  Jul: 7,
-  Ago: 8,
-  Set: 9,
-  Out: 10,
-  Nov: 11,
-}
-
-async function resolveAnoByAnoLetivoId(anoLetivoId: string) {
-  const { data, error } = await supabase
-    .from('anos_letivos')
-    .select('ano')
-    .eq('id', anoLetivoId)
-    .single()
-
-  if (error) throw error
-  return data.ano as number
-}
 
 export function useLancamentos(unidadeId?: string, anoLetivoId?: string, mes?: string) {
   const professores = useProfessoresByUnidade(unidadeId)

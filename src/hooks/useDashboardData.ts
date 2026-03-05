@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { QUARTERS } from '../constants'
+import { QUARTERS, MONTH_TO_NUMBER } from '../constants'
 import { UnitId } from '../types'
 import { supabase } from '../lib/supabase'
+import { resolveAnoByAnoLetivoId } from '../lib/resolveAno'
 import { useTrimestres } from './useTrimestres'
 import { useUnidades } from './useUnidades'
 
@@ -29,28 +30,6 @@ export interface RankingItem {
 }
 
 const CONSOLIDADO_UNITS = ['CG', 'RC', 'BA']
-const MONTH_TO_NUMBER: Record<string, number> = {
-  Mar: 3,
-  Abr: 4,
-  Mai: 5,
-  Jun: 6,
-  Jul: 7,
-  Ago: 8,
-  Set: 9,
-  Out: 10,
-  Nov: 11,
-}
-
-async function resolveAnoByAnoLetivoId(anoLetivoId: string) {
-  const { data, error } = await supabase
-    .from('anos_letivos')
-    .select('ano')
-    .eq('id', anoLetivoId)
-    .single()
-
-  if (error) throw error
-  return data.ano as number
-}
 
 export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoLetivoId?: string) {
   const unidades = useUnidades()
