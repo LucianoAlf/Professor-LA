@@ -8,6 +8,10 @@ export interface Unidade {
 export interface Professor {
   id: string
   nome: string
+  email?: string | null
+  telefone?: string | null
+  instrumento?: string | null
+  foto_url?: string | null
   ativo?: boolean
 }
 

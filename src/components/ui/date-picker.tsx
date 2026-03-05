@@ -23,6 +23,8 @@ const MONTHS_PT_BR = [
 ]
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+const START_YEAR = 1990
+const END_YEAR = new Date().getFullYear() + 5
 
 const pad = (value: number) => String(value).padStart(2, '0')
 
@@ -91,6 +93,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
     return cells
   }, [viewDate])
 
+  const availableYears = useMemo(() => {
+    const years: number[] = []
+    for (let year = END_YEAR; year >= START_YEAR; year -= 1) {
+      years.push(year)
+    }
+    return years
+  }, [])
+
   const goToPrevMonth = () => {
     setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
   }
@@ -102,6 +112,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
   const selectDate = (date: Date) => {
     onChange(toIsoDate(date))
     setOpen(false)
+  }
+
+  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextMonth = Number(event.target.value)
+    setViewDate((prev) => new Date(prev.getFullYear(), nextMonth, 1))
+  }
+
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextYear = Number(event.target.value)
+    setViewDate((prev) => new Date(nextYear, prev.getMonth(), 1))
   }
 
   return (
@@ -117,7 +137,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-2 w-[280px] rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_12px_28px_rgba(0,0,0,0.35)] p-3">
+        <div className="absolute z-50 mt-2 w-[320px] rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_12px_28px_rgba(0,0,0,0.35)] p-3">
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
@@ -126,8 +146,29 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="text-sm font-semibold text-[var(--txt)]">
-              {MONTHS_PT_BR[viewDate.getMonth()]} {viewDate.getFullYear()}
+            <div className="flex items-center gap-2">
+              <select
+                value={viewDate.getMonth()}
+                onChange={handleMonthChange}
+                className="h-8 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--txt)] outline-none focus:border-[var(--gold)]"
+              >
+                {MONTHS_PT_BR.map((monthName, idx) => (
+                  <option key={monthName} value={idx}>
+                    {monthName}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={viewDate.getFullYear()}
+                onChange={handleYearChange}
+                className="h-8 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--txt)] outline-none focus:border-[var(--gold)]"
+              >
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             <button
               type="button"

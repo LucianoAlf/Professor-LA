@@ -3,10 +3,12 @@ import { useAppContext } from '../AppContext';
 import { QUARTERS, UNITS } from '../constants';
 import { Pill, UnitBadge, RankPos, AptoBadge, AvalText } from '../components/ui';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { useProfessorCountByUnit } from '../hooks/useProfessorCountByUnit';
 
 export const Dashboard: React.FC = () => {
   const { curQ, curUnit, anoLetivoId } = useAppContext();
   const dashboardQuery = useDashboardData(curUnit, curQ, anoLetivoId);
+  const professorCountQuery = useProfessorCountByUnit(curUnit);
   const data = dashboardQuery.data ?? [];
   const q = QUARTERS[curQ];
   const isCons = curUnit === 'CONS';
@@ -15,6 +17,7 @@ export const Dashboard: React.FC = () => {
   const mediaHs = data.length ? data.reduce((s, d) => s + d.hs, 0) / data.length : 0;
   const acima80 = data.filter(d => d.hs >= 80).length;
   const aptos = data.filter(d => d.apto).length;
+  const professoresAtivos = professorCountQuery.data ?? 0;
 
   return (
     <div className="animate-[fadeIn_0.25s_ease] p-5 md:px-7 md:py-6 pb-12">
@@ -33,8 +36,8 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 relative overflow-hidden transition-transform hover:-translate-y-0.5 before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-0.5 before:bg-gradient-to-r before:from-[var(--gold)] before:to-transparent">
           <div className="text-[10px] tracking-[1.5px] uppercase text-[var(--txt3)] mb-2 font-semibold">Professores</div>
-          <div className="font-serif text-[34px] font-black leading-none text-[var(--gold)]">{data.length}</div>
-          <div className="text-[11px] text-[var(--txt3)] mt-1.5">avaliados este trimestre</div>
+          <div className="font-serif text-[34px] font-black leading-none text-[var(--gold)]">{professoresAtivos}</div>
+          <div className="text-[11px] text-[var(--txt3)] mt-1.5">ativos na unidade</div>
         </div>
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 relative overflow-hidden transition-transform hover:-translate-y-0.5 before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-0.5 before:bg-gradient-to-r before:from-[var(--ink3)] before:to-transparent">
           <div className="text-[10px] tracking-[1.5px] uppercase text-[var(--txt3)] mb-2 font-semibold">Média Health Score</div>

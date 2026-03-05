@@ -110,3 +110,27 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.professor-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,151,58,0.55) rgba(255,255,255,0.08);
+}
+
+.professor-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.professor-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.08);
+  border-radius: 9999px;
+}
+
+.professor-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(200,151,58,0.9), rgba(154,111,30,0.9));
+  border-radius: 9999px;
+  border: 2px solid rgba(10,22,40,0.75);
+}
+
+.professor-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(200,151,58,1), rgba(154,111,30,1));
+}

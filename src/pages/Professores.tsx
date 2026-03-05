@@ -13,8 +13,21 @@ interface ProfessorFormState {
   email: string
   telefone: string
   instrumento: string
+  fotoUrl: string
   dataInicio: string
   unidadeIds: string[]
+}
+
+interface ProfessorCardData {
+  id: string
+  nome: string
+  email: string
+  telefone: string
+  instrumento: string
+  fotoUrl: string
+  dataInicio: string
+  unidadeIds: string[]
+  unidades: string[]
 }
 
 const getRelationObject = <T,>(value: T | T[] | null | undefined): T | null => {
@@ -27,21 +40,33 @@ const DEFAULT_FORM: ProfessorFormState = {
   email: '',
   telefone: '',
   instrumento: '',
+  fotoUrl: '',
   dataInicio: new Date().toISOString().slice(0, 10),
   unidadeIds: [],
+}
+
+const getInitials = (name: string) => {
+  return name
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
 }
 
 export const Professores: React.FC = () => {
   const queryClient = useQueryClient()
   const unidadesQuery = useUnidades()
   const [form, setForm] = useState<ProfessorFormState>(DEFAULT_FORM)
+  const [editingProfessorId, setEditingProfessorId] = useState<string | null>(null)
 
   const professoresQuery = useQuery({
     queryKey: ['professores-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('professor_unidade')
-        .select('id, ativo, data_inicio, professor:professor_id(id, nome, email, telefone, instrumento), unidade:unidade_id(id, nome, codigo)')
+        .select('id, unidade_id, ativo, data_inicio, professor:professor_id(id, nome, email, telefone, instrumento, foto_url, ativo), unidade:unidade_id(id, nome, codigo)')
         .eq('ativo', true)
 
       if (error) throw error
@@ -50,23 +75,40 @@ export const Professores: React.FC = () => {
   })
 
   const groupedProfessores = useMemo(() => {
-    const map = new Map<string, any>()
+    const map = new Map<string, ProfessorCardData>()
 
     for (const item of professoresQuery.data ?? []) {
       const professor = getRelationObject<any>(item.professor)
       const unidade = getRelationObject<any>(item.unidade)
-      if (!professor?.id) continue
+      if (!professor?.id || professor.ativo === false || !item.ativo) continue
 
       if (!map.has(professor.id)) {
         map.set(professor.id, {
-          ...professor,
+          id: professor.id,
+          nome: professor.nome,
+          email: professor.email ?? '',
+          telefone: professor.telefone ?? '',
+          instrumento: professor.instrumento ?? '',
+          fotoUrl: professor.foto_url ?? '',
+          dataInicio: item.data_inicio ?? DEFAULT_FORM.dataInicio,
+          unidadeIds: [],
           unidades: [],
         })
       }
 
       const current = map.get(professor.id)
-      if (unidade?.nome) {
+      if (!current) continue
+
+      if (unidade?.nome && !current.unidades.includes(unidade.nome)) {
         current.unidades.push(unidade.nome)
+      }
+
+      if (item.unidade_id && !current.unidadeIds.includes(item.unidade_id)) {
+        current.unidadeIds.push(item.unidade_id)
+      }
+
+      if (!current.dataInicio && item.data_inicio) {
+        current.dataInicio = item.data_inicio
       }
     }
 
@@ -82,6 +124,7 @@ export const Professores: React.FC = () => {
           email: payload.email || null,
           telefone: payload.telefone || null,
           instrumento: payload.instrumento || null,
+          foto_url: payload.fotoUrl || null,
           ativo: true,
         })
         .select('id')
@@ -104,6 +147,102 @@ export const Professores: React.FC = () => {
     },
     onSuccess: async () => {
       setForm(DEFAULT_FORM)
+      setEditingProfessorId(null)
+      await queryClient.invalidateQueries({ queryKey: ['professor-count-by-unit'] })
+      await queryClient.invalidateQueries({ queryKey: ['professores-admin'] })
+      await queryClient.invalidateQueries({ queryKey: ['professores-by-unidade'] })
+    },
+  })
+
+  const updateProfessor = useMutation({
+    mutationFn: async ({ professorId, payload }: { professorId: string; payload: ProfessorFormState }) => {
+      const { error: updateProfessorError } = await supabase
+        .from('professores')
+        .update({
+          nome: payload.nome,
+          email: payload.email || null,
+          telefone: payload.telefone || null,
+          instrumento: payload.instrumento || null,
+          foto_url: payload.fotoUrl || null,
+          ativo: true,
+        })
+        .eq('id', professorId)
+
+      if (updateProfessorError) throw updateProfessorError
+
+      const { data: links, error: linksError } = await supabase
+        .from('professor_unidade')
+        .select('id, unidade_id, ativo')
+        .eq('professor_id', professorId)
+
+      if (linksError) throw linksError
+
+      const selected = new Set(payload.unidadeIds)
+      const existing = new Map((links ?? []).map((link) => [link.unidade_id, link]))
+
+      for (const link of links ?? []) {
+        if (!selected.has(link.unidade_id) && link.ativo) {
+          const { error } = await supabase
+            .from('professor_unidade')
+            .update({ ativo: false, data_fim: new Date().toISOString().slice(0, 10) })
+            .eq('id', link.id)
+          if (error) throw error
+        }
+
+        if (selected.has(link.unidade_id) && !link.ativo) {
+          const { error } = await supabase
+            .from('professor_unidade')
+            .update({ ativo: true, data_fim: null, data_inicio: payload.dataInicio })
+            .eq('id', link.id)
+          if (error) throw error
+        }
+      }
+
+      const newLinks = payload.unidadeIds
+        .filter((unidadeId) => !existing.has(unidadeId))
+        .map((unidadeId) => ({
+          professor_id: professorId,
+          unidade_id: unidadeId,
+          ativo: true,
+          data_inicio: payload.dataInicio,
+        }))
+
+      if (newLinks.length) {
+        const { error: newLinksError } = await supabase.from('professor_unidade').insert(newLinks)
+        if (newLinksError) throw newLinksError
+      }
+    },
+    onSuccess: async () => {
+      setForm(DEFAULT_FORM)
+      setEditingProfessorId(null)
+      await queryClient.invalidateQueries({ queryKey: ['professor-count-by-unit'] })
+      await queryClient.invalidateQueries({ queryKey: ['professores-admin'] })
+      await queryClient.invalidateQueries({ queryKey: ['professores-by-unidade'] })
+    },
+  })
+
+  const deleteProfessor = useMutation({
+    mutationFn: async (professorId: string) => {
+      const { error: linksError } = await supabase
+        .from('professor_unidade')
+        .update({ ativo: false, data_fim: new Date().toISOString().slice(0, 10) })
+        .eq('professor_id', professorId)
+
+      if (linksError) throw linksError
+
+      const { error: professorError } = await supabase
+        .from('professores')
+        .update({ ativo: false })
+        .eq('id', professorId)
+
+      if (professorError) throw professorError
+    },
+    onSuccess: async () => {
+      if (editingProfessorId) {
+        setEditingProfessorId(null)
+        setForm(DEFAULT_FORM)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['professor-count-by-unit'] })
       await queryClient.invalidateQueries({ queryKey: ['professores-admin'] })
       await queryClient.invalidateQueries({ queryKey: ['professores-by-unidade'] })
     },
@@ -120,7 +259,39 @@ export const Professores: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.nome.trim() || form.unidadeIds.length === 0) return
+
+    if (editingProfessorId) {
+      await updateProfessor.mutateAsync({ professorId: editingProfessorId, payload: form })
+      return
+    }
+
     await createProfessor.mutateAsync(form)
+  }
+
+  const handleEdit = (professor: ProfessorCardData) => {
+    setEditingProfessorId(professor.id)
+    setForm({
+      nome: professor.nome,
+      email: professor.email,
+      telefone: professor.telefone,
+      instrumento: professor.instrumento,
+      fotoUrl: professor.fotoUrl,
+      dataInicio: professor.dataInicio || DEFAULT_FORM.dataInicio,
+      unidadeIds: professor.unidadeIds,
+    })
+  }
+
+  const handleDelete = async (professor: ProfessorCardData) => {
+    const confirmed = window.confirm(`Tem certeza que deseja excluir o professor ${professor.nome}?`)
+    if (!confirmed) return
+    await deleteProfessor.mutateAsync(professor.id)
+  }
+
+  const isSaving = createProfessor.isPending || updateProfessor.isPending
+
+  const clearForm = () => {
+    setEditingProfessorId(null)
+    setForm(DEFAULT_FORM)
   }
 
   return (
@@ -140,7 +311,7 @@ export const Professores: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>➕ Novo professor</CardTitle>
+            <CardTitle>{editingProfessorId ? '✏️ Editar professor' : '➕ Novo professor'}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1.5">
@@ -170,6 +341,24 @@ export const Professores: React.FC = () => {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--txt2)]">Foto (URL)</label>
+              <Input
+                value={form.fotoUrl}
+                onChange={(e) => setForm((prev) => ({ ...prev, fotoUrl: e.target.value }))}
+                placeholder="https://..."
+              />
+              {form.fotoUrl && (
+                <div className="pt-1">
+                  <img
+                    src={form.fotoUrl}
+                    alt="Pré-visualização da foto"
+                    className="h-14 w-14 rounded-full object-cover border border-[var(--border)]"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-semibold text-[var(--txt2)]">Unidades de atuação *</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -194,15 +383,15 @@ export const Professores: React.FC = () => {
             </div>
 
             <div className="flex gap-2.5">
-              <Button onClick={handleSave} disabled={createProfessor.isPending || !form.nome.trim() || form.unidadeIds.length === 0}>
-                {createProfessor.isPending ? 'Salvando...' : 'Salvar professor'}
+              <Button onClick={handleSave} disabled={isSaving || !form.nome.trim() || form.unidadeIds.length === 0}>
+                {isSaving ? 'Salvando...' : editingProfessorId ? 'Atualizar professor' : 'Salvar professor'}
               </Button>
-              <Button variant="outline" onClick={() => setForm(DEFAULT_FORM)} disabled={createProfessor.isPending}>
-                Limpar
+              <Button variant="outline" onClick={clearForm} disabled={isSaving}>
+                {editingProfessorId ? 'Cancelar edição' : 'Limpar'}
               </Button>
             </div>
 
-            {createProfessor.isError && (
+            {(createProfessor.isError || updateProfessor.isError || deleteProfessor.isError) && (
               <Badge variant="danger">Erro ao salvar professor. Verifique os dados e tente novamente.</Badge>
             )}
           </CardContent>
@@ -219,13 +408,53 @@ export const Professores: React.FC = () => {
             )}
 
             {!professoresQuery.isLoading && !professoresQuery.isError && (
-              <div className="space-y-2 max-h-[520px] overflow-auto pr-1">
+              <div className="professor-scroll space-y-2 max-h-[520px] overflow-auto pr-1">
                 {groupedProfessores.map((professor) => (
-                  <div key={professor.id} className="rounded-lg border border-[var(--border)] p-3 bg-[var(--surface)]">
-                    <div className="text-sm font-semibold text-[var(--txt)]">{professor.nome}</div>
-                    <div className="text-xs text-[var(--txt3)] mt-1">
-                      {professor.instrumento || 'Especialidade não informada'}
+                  <div key={professor.id} className="rounded-xl border border-[rgba(255,255,255,0.08)] p-3 bg-[rgba(255,255,255,0.03)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        {professor.fotoUrl ? (
+                          <img
+                            src={professor.fotoUrl}
+                            alt={`Foto de ${professor.nome}`}
+                            className="h-11 w-11 rounded-full object-cover border border-[var(--border)]"
+                          />
+                        ) : (
+                          <div className="h-11 w-11 rounded-full border border-[var(--border)] bg-[rgba(45,90,160,0.24)] text-[var(--txt2)] text-xs font-bold flex items-center justify-center">
+                            {getInitials(professor.nome)}
+                          </div>
+                        )}
+
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--txt)]">{professor.nome}</div>
+                          <div className="text-xs text-[var(--txt3)] mt-1">
+                            {professor.instrumento || 'Especialidade nao informada'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <Button variant="outline" className="h-8 px-3" onClick={() => handleEdit(professor)}>
+                          Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-8 px-3 border-[rgba(166,28,28,0.3)] text-[var(--red)] hover:bg-[rgba(166,28,28,0.12)]"
+                          onClick={() => handleDelete(professor)}
+                          disabled={deleteProfessor.isPending}
+                        >
+                          Excluir
+                        </Button>
+                      </div>
                     </div>
+
+                    {(professor.email || professor.telefone) && (
+                      <div className="mt-2 text-xs text-[var(--txt3)] flex flex-wrap gap-x-3 gap-y-1">
+                        {professor.email && <span>{professor.email}</span>}
+                        {professor.telefone && <span>{professor.telefone}</span>}
+                      </div>
+                    )}
+
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {professor.unidades.map((unidade: string) => (
                         <Badge key={`${professor.id}-${unidade}`}>{unidade}</Badge>
