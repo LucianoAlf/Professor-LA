@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { BarChart2, Trophy, Calendar, Inbox, Target, Settings, ClipboardList, UserPlus } from 'lucide-react';
 import { QUARTERS } from '../constants';
 
 export const Sidebar: React.FC = () => {
   const { sbOpen, setSbOpen, activePage, setActivePage, curQ } = useAppContext();
+  const [showLogoFallback, setShowLogoFallback] = useState(false);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart2, sec: 'Visão Geral' },
@@ -33,8 +34,19 @@ export const Sidebar: React.FC = () => {
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 h-screen w-[220px] bg-[var(--bg2)] border-r border-[var(--border2)] flex flex-col z-[200] backdrop-blur-xl transition-transform duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] ${sbOpen ? 'translate-x-0' : '-translate-x-[220px] lg:translate-x-0'}`}>
         <div className="px-5 pt-[22px] pb-[18px] border-b border-[var(--border2)]">
-          <div className="font-serif text-[11px] font-black bg-[var(--gold)] text-[var(--ink)] px-2 py-[3px] rounded-md tracking-wider inline-block mb-2">LA</div>
-          <div className="font-serif text-lg font-bold text-[var(--txt)] leading-none">Music</div>
+          {showLogoFallback ? (
+            <>
+              <div className="font-serif text-[11px] font-black bg-[var(--gold)] text-[var(--ink)] px-2 py-[3px] rounded-md tracking-wider inline-block mb-2">LA</div>
+              <div className="font-serif text-lg font-bold text-[var(--txt)] leading-none">Music</div>
+            </>
+          ) : (
+            <img
+              src="/logo2.png"
+              alt="Professor +LA"
+              onError={() => setShowLogoFallback(true)}
+              className="h-12 w-auto mb-2"
+            />
+          )}
           <div className="text-[10px] text-[var(--txt3)] tracking-[1.5px] uppercase mt-1">Professor+LA</div>
         </div>
         
