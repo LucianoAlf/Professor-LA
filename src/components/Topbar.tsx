@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../AppContext';
 import { QUARTERS } from '../constants';
 import { QuarterId } from '../types';
@@ -7,7 +7,6 @@ import { supabase } from '../lib/supabase';
 
 export const Topbar: React.FC = () => {
   const { sbOpen, setSbOpen, curQ, setCurQ, setCurMonth, isLight, setIsLight } = useAppContext();
-  const [showLogoFallback, setShowLogoFallback] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -35,19 +34,12 @@ export const Topbar: React.FC = () => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        {showLogoFallback ? (
-          <div className="font-serif text-[19px] font-bold text-[var(--txt)] hidden sm:block">
-            Professor <span className="text-[var(--gold)]">+LA</span>
-          </div>
-        ) : (
-          <img
-            src="/logo.png"
-            alt="Professor +LA"
-            onError={() => setShowLogoFallback(true)}
-            className="hidden h-8 w-auto sm:block"
-          />
-        )}
-        <div className="flex gap-1.5 ml-2">
+        <div className="font-serif text-[19px] font-bold text-[var(--txt)] hidden sm:block">
+          Professor <span className="text-[var(--gold)]">+LA</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <div className="flex gap-1.5">
           {(Object.keys(QUARTERS) as QuarterId[]).map(q => (
             <button
               key={q}
@@ -58,8 +50,6 @@ export const Topbar: React.FC = () => {
             </button>
           ))}
         </div>
-      </div>
-      <div className="flex items-center gap-2.5">
         <div className="bg-[rgba(45,90,160,0.18)] border border-[rgba(45,90,160,0.3)] rounded-full px-3 py-1.5 text-[11px] text-[#7EB9FF] font-semibold">
           2026
         </div>

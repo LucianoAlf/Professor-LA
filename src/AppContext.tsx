@@ -22,6 +22,8 @@ interface AppContextType {
   setIsLight: (l: boolean) => void
   sbOpen: boolean
   setSbOpen: (o: boolean) => void
+  sbCollapsed: boolean
+  setSbCollapsed: (c: boolean) => void
   activePage: string
   setActivePage: (p: string) => void
   cfg: Config
@@ -44,6 +46,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLight,
     sbOpen,
     setSbOpen,
+    sbCollapsed,
+    setSbCollapsed,
     activePage,
     setActivePage,
   } = useAppStore()
@@ -84,6 +88,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLight,
       sbOpen,
       setSbOpen,
+      sbCollapsed,
+      setSbCollapsed,
       activePage,
       setActivePage,
       cfg,

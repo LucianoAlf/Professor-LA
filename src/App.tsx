@@ -15,12 +15,16 @@ import { Professores } from './pages/Professores';
 import { useAuth } from './hooks/useAuth';
 
 const MainContent: React.FC = () => {
-  const { activePage, sbOpen } = useAppContext();
+  const { activePage, sbOpen, sbCollapsed } = useAppContext();
+  const sidebarMargin = sbCollapsed ? 72 : 220;
 
   return (
     <div className="flex min-h-screen relative z-10">
       <Sidebar />
-      <div className={`flex-1 min-w-0 transition-[margin] duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] ${sbOpen ? 'lg:ml-[220px]' : 'ml-0'}`}>
+      <div 
+        className={`flex-1 min-w-0 transition-[margin] duration-250 ease-[cubic-bezier(0.4,0,0.2,1)] ${sbOpen ? '' : 'ml-0'}`}
+        style={sbOpen ? { marginLeft: sidebarMargin } : undefined}
+      >
         <Topbar />
         <UnitBar />
         {activePage === 'dashboard' && <Dashboard />}
