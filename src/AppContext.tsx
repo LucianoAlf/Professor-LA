@@ -28,6 +28,7 @@ interface AppContextType {
   setActivePage: (p: string) => void
   cfg: Config
   anoLetivoId?: string
+  anoLetivo?: number
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -94,6 +95,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActivePage,
       cfg,
       anoLetivoId: anoLetivo.data?.id,
+      anoLetivo: anoLetivo.data?.ano,
     }}>
       {children}
     </AppContext.Provider>

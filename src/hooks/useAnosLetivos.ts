@@ -9,7 +9,9 @@ export function useAnoLetivoAtual() {
       const { data, error } = await supabase
         .from('anos_letivos')
         .select('*')
-        .eq('ano', 2026)
+        .eq('ativo', true)
+        .order('ano', { ascending: false })
+        .limit(1)
         .maybeSingle()
 
       if (error) throw error

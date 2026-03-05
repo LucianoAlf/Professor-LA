@@ -29,7 +29,7 @@ export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
   }, [unidades.data, curUnit])
 
   return useQuery({
-    queryKey: ['annual-data', curUnit, anoLetivoId, unidadeIds.length],
+    queryKey: ['annual-data', curUnit, anoLetivoId, unidadeIds.map((u) => u.id).sort().join(',')],
     enabled: Boolean(anoLetivoId && unidadeIds.length),
     queryFn: async () => {
       const unidadeIdList = unidadeIds.map((item) => item.id)

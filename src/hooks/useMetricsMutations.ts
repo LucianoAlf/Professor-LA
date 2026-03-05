@@ -21,6 +21,13 @@ interface SaveLancamentosInput {
   }>
 }
 
+interface RecalculateQuarterRankingInput {
+  anoLetivoId: string
+  quarterCode: 'Q1' | 'Q2' | 'Q3'
+  unitCodes: string[]
+  configPesos: ConfigPesos
+}
+
 interface SavePdiInput {
   trimestreId: string
   anoLetivoId: string
@@ -176,6 +183,54 @@ export function useSaveLancamentosMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['lancamentos'] })
+      await queryClient.invalidateQueries({ queryKey: ['health-scores'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-data'] })
+      await queryClient.invalidateQueries({ queryKey: ['annual-data'] })
+    },
+  })
+}
+
+export function useRecalculateQuarterRankingMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ anoLetivoId, quarterCode, unitCodes, configPesos }: RecalculateQuarterRankingInput) => {
+      const ano = await resolveAnoByAnoLetivoId(anoLetivoId)
+
+      const { data: trimestre, error: trimestreError } = await supabase
+        .from('trimestres')
+        .select('id')
+        .eq('ano_letivo_id', anoLetivoId)
+        .eq('codigo', quarterCode)
+        .single()
+
+      if (trimestreError || !trimestre) throw trimestreError ?? new Error('Trimestre não encontrado')
+
+      const { data: unidades, error: unidadesError } = await supabase
+        .from('unidades')
+        .select('id')
+        .in('codigo', unitCodes)
+
+      if (unidadesError) throw unidadesError
+
+      const unidadeIds = (unidades ?? []).map((item: any) => item.id)
+      if (!unidadeIds.length) return { recalculatedCount: 0 }
+
+      const { data: professorUnidade, error: professorUnidadeError } = await supabase
+        .from('professor_unidade')
+        .select('id')
+        .in('unidade_id', unidadeIds)
+
+      if (professorUnidadeError) throw professorUnidadeError
+
+      const professorUnidadeIds = (professorUnidade ?? []).map((item: any) => item.id)
+      if (!professorUnidadeIds.length) return { recalculatedCount: 0 }
+
+      await recalculateAndPersistHealthScores(ano, anoLetivoId, trimestre.id, configPesos, professorUnidadeIds)
+
+      return { recalculatedCount: professorUnidadeIds.length }
+    },
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['health-scores'] })
       await queryClient.invalidateQueries({ queryKey: ['dashboard-data'] })
       await queryClient.invalidateQueries({ queryKey: ['annual-data'] })

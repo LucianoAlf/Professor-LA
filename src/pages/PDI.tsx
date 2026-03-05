@@ -16,7 +16,7 @@ interface PdiFormItem {
 }
 
 export const PDI: React.FC = () => {
-  const { curUnit, curPDIQ, setCurPDIQ, anoLetivoId, cfg } = useAppContext();
+  const { curUnit, curPDIQ, setCurPDIQ, anoLetivoId, anoLetivo, cfg } = useAppContext();
   const uid = curUnit === 'CONS' ? 'CG' : curUnit;
   const [formRows, setFormRows] = useState<PdiFormItem[]>([]);
   const [saveText, setSaveText] = useState('Salvar PDI');
@@ -124,7 +124,7 @@ export const PDI: React.FC = () => {
 
       <div className="bg-[var(--pdi-bg)] border border-[rgba(184,92,0,0.18)] rounded-xl p-4.5 mb-4">
         <h3 className="text-xs font-bold text-[var(--orange)] uppercase tracking-[1px] mb-1">
-          🎯 Notas PDI — {curPDIQ} · {UNITS[uid].label} · 2026
+          🎯 Notas PDI — {curPDIQ} · {UNITS[uid].label} · {anoLetivo ?? new Date().getFullYear()}
         </h3>
         <p className="text-xs text-[var(--txt3)] mb-3.5 leading-[1.65]">
           Nota 0–100 por professor. Contextual — o Joel (violino, poucos alunos) é avaliado no seu próprio contexto, não comparado com professores de outros instrumentos ou demandas.
@@ -133,8 +133,9 @@ export const PDI: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
           {formRows.map((row, i) => (
             <div key={row.professorUnidadeId} className="flex flex-col gap-1.5">
-              <label className="text-[11px] text-[var(--txt2)] font-semibold">{row.professorNome}</label>
+              <label htmlFor={`pdi-${row.professorUnidadeId}`} className="text-[11px] text-[var(--txt2)] font-semibold">{row.professorNome}</label>
               <input 
+                id={`pdi-${row.professorUnidadeId}`}
                 type="number" 
                 min="0" 
                 max="100" 

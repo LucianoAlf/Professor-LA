@@ -9,7 +9,7 @@ export function useLancamentos(unidadeId?: string, anoLetivoId?: string, mes?: s
   const professores = useProfessoresByUnidade(unidadeId)
 
   return useQuery({
-    queryKey: ['lancamentos', unidadeId, anoLetivoId, mes, professores.data?.length],
+    queryKey: ['lancamentos', unidadeId, anoLetivoId, mes, professores.data?.map((p) => p.id).sort().join(',')],
     enabled: Boolean(unidadeId && anoLetivoId && mes && professores.data),
     queryFn: async () => {
       const professorUnidadeIds = (professores.data ?? []).map((item) => item.id)

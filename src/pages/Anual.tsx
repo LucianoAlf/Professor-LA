@@ -5,7 +5,7 @@ import { Pill, UnitBadge, RankPos, AvalText } from '../components/ui';
 import { useAnnualData } from '../hooks/useAnnualData';
 
 export const Anual: React.FC = () => {
-  const { curUnit, anoLetivoId } = useAppContext();
+  const { curUnit, anoLetivoId, anoLetivo } = useAppContext();
   const annualQuery = useAnnualData(curUnit, anoLetivoId);
   const data = annualQuery.data ?? [];
   const isCons = curUnit === 'CONS';
@@ -18,7 +18,7 @@ export const Anual: React.FC = () => {
           Consolidado
         </div>
         <div className="font-serif text-[clamp(20px,2.2vw,28px)] font-black text-[var(--txt)] leading-[1.1]">
-          📅 Resultado <em className="text-[var(--gold)] not-italic">Anual 2026</em>
+          📅 Resultado <em className="text-[var(--gold)] not-italic">Anual {anoLetivo ?? new Date().getFullYear()}</em>
         </div>
         <div className="text-xs text-[var(--txt3)] mt-1.5">
           Média dos 3 trimestres (Q1 + Q2 + Q3). Ranking final do professor do ano.

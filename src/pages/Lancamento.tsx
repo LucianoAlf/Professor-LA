@@ -185,28 +185,28 @@ export const Lancamento: React.FC = () => {
             </div>
             <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,1fr)_1.8fr] gap-2.5">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Retenção %</label>
-                <input type="number" min="0" max="100" step="0.1" value={row.taxaRetencao} onChange={(e) => handleChange(i, 'taxaRetencao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`retencao-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Retenção %</label>
+                <input id={`retencao-${row.professorUnidadeId}`} type="number" min="0" max="100" step="0.1" value={row.taxaRetencao} onChange={(e) => handleChange(i, 'taxaRetencao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Conversão %</label>
-                <input type="number" min="0" max="100" step="0.1" value={row.taxaConversao} onChange={(e) => handleChange(i, 'taxaConversao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`conversao-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Conversão %</label>
+                <input id={`conversao-${row.professorUnidadeId}`} type="number" min="0" max="100" step="0.1" value={row.taxaConversao} onChange={(e) => handleChange(i, 'taxaConversao', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Média/Turma</label>
-                <input type="number" min="0" step="0.1" value={row.mediaTurma} onChange={(e) => handleChange(i, 'mediaTurma', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`media-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Média/Turma</label>
+                <input id={`media-${row.professorUnidadeId}`} type="number" min="0" step="0.1" value={row.mediaTurma} onChange={(e) => handleChange(i, 'mediaTurma', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Nota 360</label>
-                <input type="number" min="0" max="100" value={row.notaProf360} onChange={(e) => handleChange(i, 'notaProf360', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`nota360-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Nota 360</label>
+                <input id={`nota360-${row.professorUnidadeId}`} type="number" min="0" max="100" value={row.notaProf360} onChange={(e) => handleChange(i, 'notaProf360', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Qtd Alunos</label>
-                <input type="number" min="0" value={row.qtdAlunos} onChange={(e) => handleChange(i, 'qtdAlunos', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`qtdalunos-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Qtd Alunos</label>
+                <input id={`qtdalunos-${row.professorUnidadeId}`} type="number" min="0" value={row.qtdAlunos} onChange={(e) => handleChange(i, 'qtdAlunos', e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] font-mono text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Observações</label>
-                <input type="text" value={row.observacoes} onChange={(e) => handleTextChange(i, e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
+                <label htmlFor={`obs-${row.professorUnidadeId}`} className="text-[9px] tracking-[1px] uppercase text-[var(--txt3)] font-semibold">Observações</label>
+                <input id={`obs-${row.professorUnidadeId}`} type="text" value={row.observacoes} onChange={(e) => handleTextChange(i, e.target.value)} className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-2.5 py-2 text-[13px] text-[var(--input-color)] outline-none w-full transition-colors focus:border-[var(--gold)]" />
               </div>
             </div>
           </div>

@@ -18,6 +18,7 @@ import {
   useSyncKpisMutation,
   useUpdateKpiMutation,
 } from '../hooks/useKpiDefinitions';
+import { useRecalculateQuarterRankingMutation } from '../hooks/useMetricsMutations';
 import { KpiDefinition, KpiOrigem, KpiTipoScore } from '../types/database';
 
 interface ConfigFormState {
@@ -107,7 +108,7 @@ const KPI_TIPO_SCORE_OPTIONS = [
 ];
 
 export const Config: React.FC = () => {
-  const { anoLetivoId } = useAppContext();
+  const { anoLetivoId, curQ, curUnit } = useAppContext();
   const configQuery = useConfigPesos(anoLetivoId);
   const kpiQuery = useKpiDefinitions(anoLetivoId);
   const updateConfigMutation = useUpdateConfigPesosMutation();
@@ -115,6 +116,7 @@ export const Config: React.FC = () => {
   const createKpiMutation = useCreateKpiMutation();
   const updateKpiMutation = useUpdateKpiMutation();
   const deleteKpiMutation = useDeleteKpiMutation();
+  const recalcQuarterMutation = useRecalculateQuarterRankingMutation();
 
   const [savedBadge, setSavedBadge] = useState(false);
   const [form, setForm] = useState<ConfigFormState>(DEFAULT_FORM);
@@ -125,6 +127,7 @@ export const Config: React.FC = () => {
   const [draggingKpiId, setDraggingKpiId] = useState<string | null>(null);
   const [dragOverKpiId, setDragOverKpiId] = useState<string | null>(null);
   const [kpiForm, setKpiForm] = useState<KpiFormState>(DEFAULT_KPI_FORM);
+  const [recalcBadge, setRecalcBadge] = useState<string | null>(null);
 
   useEffect(() => {
     if (!configQuery.data) return;
@@ -356,6 +359,22 @@ export const Config: React.FC = () => {
 
     setSavedBadge(true);
     setTimeout(() => setSavedBadge(false), 1800);
+  };
+
+  const handleRecalculateQuarter = async () => {
+    if (!anoLetivoId || !configQuery.data) return;
+
+    const unitCodes = curUnit === 'CONS' ? ['CG', 'RC', 'BA'] : [curUnit];
+
+    const result = await recalcQuarterMutation.mutateAsync({
+      anoLetivoId,
+      quarterCode: curQ,
+      unitCodes,
+      configPesos: configQuery.data,
+    });
+
+    setRecalcBadge(`Ranking ${curQ} recalculado (${result.recalculatedCount} professores).`);
+    setTimeout(() => setRecalcBadge(null), 2200);
   };
 
   if (isLoading) {
@@ -629,6 +648,13 @@ export const Config: React.FC = () => {
         </Button>
         <Button
           variant="outline"
+          onClick={handleRecalculateQuarter}
+          disabled={isPendingMutation || recalcQuarterMutation.isPending || !anoLetivoId || !configQuery.data}
+        >
+          {recalcQuarterMutation.isPending ? `Recalculando ${curQ}...` : `Recalcular ranking ${curQ}`}
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => {
             setForm(DEFAULT_FORM);
             setSavedBadge(false);
@@ -638,6 +664,15 @@ export const Config: React.FC = () => {
           Restaurar padrão
         </Button>
       </div>
+
+      {(recalcBadge || recalcQuarterMutation.isError) && (
+        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          {recalcBadge && <Badge variant="success">{recalcBadge}</Badge>}
+          {recalcQuarterMutation.isError && (
+            <Badge variant="danger">Erro ao recalcular ranking do trimestre. Tente novamente.</Badge>
+          )}
+        </div>
+      )}
 
       {isKpiModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">

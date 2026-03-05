@@ -45,7 +45,7 @@ export function useDashboardData(curUnit: UnitId, curQ: 'Q1' | 'Q2' | 'Q3', anoL
   }, [unidades.data, curUnit])
 
   return useQuery({
-    queryKey: ['dashboard-data', curUnit, curQ, anoLetivoId, trimestreId, unidadeIds.length],
+    queryKey: ['dashboard-data', curUnit, curQ, anoLetivoId, trimestreId, unidadeIds.map((u) => u.id).sort().join(',')],
     enabled: Boolean(anoLetivoId && trimestreId && unidadeIds.length),
     queryFn: async () => {
       const unidadeIdList = unidadeIds.map((item) => item.id)
