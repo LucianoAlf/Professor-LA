@@ -93,14 +93,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
     return cells
   }, [viewDate])
 
-  const availableYears = useMemo(() => {
-    const years: number[] = []
-    for (let year = END_YEAR; year >= START_YEAR; year -= 1) {
-      years.push(year)
-    }
-    return years
-  }, [])
-
   const goToPrevMonth = () => {
     setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
   }
@@ -119,8 +111,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
     setViewDate((prev) => new Date(prev.getFullYear(), nextMonth, 1))
   }
 
-  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextYear = Number(event.target.value)
+  const handleYearChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const parsedYear = Number(event.target.value)
+    if (Number.isNaN(parsedYear)) return
+
+    const nextYear = Math.min(END_YEAR, Math.max(START_YEAR, parsedYear))
     setViewDate((prev) => new Date(nextYear, prev.getMonth(), 1))
   }
 
@@ -153,22 +148,22 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, disable
                 className="h-8 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--txt)] outline-none focus:border-[var(--gold)]"
               >
                 {MONTHS_PT_BR.map((monthName, idx) => (
-                  <option key={monthName} value={idx}>
+                  <option key={monthName} value={idx} className="bg-slate-100 text-slate-900">
                     {monthName}
                   </option>
                 ))}
               </select>
-              <select
+              <input
+                type="number"
+                inputMode="numeric"
+                min={START_YEAR}
+                max={END_YEAR}
+                step={1}
                 value={viewDate.getFullYear()}
                 onChange={handleYearChange}
-                className="h-8 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--txt)] outline-none focus:border-[var(--gold)]"
-              >
-                {availableYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+                className="h-8 w-[84px] rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--txt)] outline-none focus:border-[var(--gold)]"
+                aria-label="Selecionar ano"
+              />
             </div>
             <button
               type="button"

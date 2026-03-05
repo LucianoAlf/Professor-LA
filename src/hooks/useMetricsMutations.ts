@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUARTERS } from '../constants'
 import { calcHealthScore } from '../lib/calcHealthScore'
 import { supabase } from '../lib/supabase'
-import { ConfigPesos, LancamentoMensal } from '../types/database'
+import { ConfigPesos, KpiDefinition, LancamentoMensal } from '../types/database'
 
 const MONTH_TO_NUMBER: Record<string, number> = {
   Mar: 3,
@@ -55,6 +55,7 @@ interface SavePdiInput {
 
 async function recalculateAndPersistHealthScores(
   ano: number,
+  anoLetivoId: string,
   trimestreId: string,
   configPesos: ConfigPesos,
   professorUnidadeIds: string[]
@@ -87,6 +88,15 @@ async function recalculateAndPersistHealthScores(
 
   if (pdiError) throw pdiError
 
+  const { data: kpiDefinitions, error: kpiError } = await supabase
+    .from('kpi_definitions')
+    .select('*')
+    .eq('ano_letivo_id', anoLetivoId)
+    .eq('ativo', true)
+    .order('ordem', { ascending: true })
+
+  if (kpiError) throw kpiError
+
   const groupedLancamentos = (lancamentos ?? []).reduce((acc: Record<string, LancamentoMensal[]>, item: any) => {
     const key = item.professor_unidade_id
     if (!acc[key]) {
@@ -99,7 +109,12 @@ async function recalculateAndPersistHealthScores(
   const pdiMap = new Map((pdiRows ?? []).map((item: any) => [item.professor_unidade_id, item.nota]))
 
   const scores = professorUnidadeIds.map((professorUnidadeId) => {
-    const calc = calcHealthScore(groupedLancamentos[professorUnidadeId] ?? [], pdiMap.get(professorUnidadeId) ?? 0, configPesos)
+    const calc = calcHealthScore(
+      groupedLancamentos[professorUnidadeId] ?? [],
+      pdiMap.get(professorUnidadeId) ?? 0,
+      configPesos,
+      (kpiDefinitions ?? []) as KpiDefinition[]
+    )
 
     return {
       professor_unidade_id: professorUnidadeId,
@@ -164,6 +179,7 @@ export function useSaveLancamentosMutation() {
 
       await recalculateAndPersistHealthScores(
         ano,
+        anoLetivoId,
         trimestreId,
         configPesos,
         rows.map((row) => row.professorUnidadeId)
@@ -199,6 +215,7 @@ export function useSavePdiMutation() {
 
       await recalculateAndPersistHealthScores(
         ano,
+        anoLetivoId,
         trimestreId,
         configPesos,
         rows.map((row) => row.professorUnidadeId)

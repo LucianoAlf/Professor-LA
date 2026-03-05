@@ -56,7 +56,7 @@ export function useConfigPesos(anoLetivoId?: string) {
 }
 
 interface UpdateConfigPesosInput {
-  id: string
+  anoLetivoId: string
   payload: Partial<ConfigPesos>
 }
 
@@ -64,11 +64,16 @@ export function useUpdateConfigPesosMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, payload }: UpdateConfigPesosInput) => {
+    mutationFn: async ({ anoLetivoId, payload }: UpdateConfigPesosInput) => {
       const { error } = await supabase
         .from('config_pesos')
-        .update(payload)
-        .eq('id', id)
+        .upsert(
+          {
+            ano_letivo_id: anoLetivoId,
+            ...payload,
+          },
+          { onConflict: 'ano_letivo_id' }
+        )
 
       if (error) throw error
     },

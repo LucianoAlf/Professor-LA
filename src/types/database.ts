@@ -55,6 +55,28 @@ export interface ConfigPesos {
   corte_prof360?: number
 }
 
+export type KpiOrigem = 'lancamento' | 'pdi' | 'calculado'
+export type KpiTipoScore = 'percentual' | 'faixa' | 'direto'
+
+export interface KpiDefinition {
+  id: string
+  ano_letivo_id: string
+  slug: string
+  nome: string
+  descricao?: string | null
+  origem: KpiOrigem
+  campo_origem?: string | null
+  tipo_score: KpiTipoScore
+  min_ref?: number | null
+  max_ref?: number | null
+  peso: number
+  entra_no_health_score: boolean
+  ativo: boolean
+  ordem: number
+  criado_em?: string
+  atualizado_em?: string
+}
+
 export interface LancamentoMensal {
   id?: string
   professor_unidade_id: string

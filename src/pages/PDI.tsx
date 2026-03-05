@@ -7,6 +7,7 @@ import { useSavePdiMutation } from '../hooks/useMetricsMutations';
 import { usePDI } from '../hooks/usePDI';
 import { useProfessoresByUnidade } from '../hooks/useProfessoresByUnidade';
 import { useTrimestreByCodigo, useUnidadeByCodigo } from '../hooks/useSelectionData';
+import { parseFlexibleNumber } from '../lib/number';
 
 interface PdiFormItem {
   professorUnidadeId: string;
@@ -18,7 +19,7 @@ export const PDI: React.FC = () => {
   const { curUnit, curPDIQ, setCurPDIQ, anoLetivoId, cfg } = useAppContext();
   const uid = curUnit === 'CONS' ? 'CG' : curUnit;
   const [formRows, setFormRows] = useState<PdiFormItem[]>([]);
-  const [saveText, setSaveText] = useState('💾 Salvar PDI');
+  const [saveText, setSaveText] = useState('Salvar PDI');
 
   const unidadeData = useUnidadeByCodigo(curUnit);
   const trimestreData = useTrimestreByCodigo(anoLetivoId, curPDIQ);
@@ -64,12 +65,12 @@ export const PDI: React.FC = () => {
       })),
     });
 
-    setSaveText('✅ PDI Salvo!');
-    setTimeout(() => setSaveText('💾 Salvar PDI'), 1600);
+    setSaveText('PDI salvo!');
+    setTimeout(() => setSaveText('Salvar PDI'), 1600);
   };
 
   const handleChange = (index: number, value: string) => {
-    const numValue = parseFloat(value) || 0;
+    const numValue = parseFlexibleNumber(value, 0);
     setFormRows((prev) => prev.map((row, i) => (i === index ? { ...row, notaPdi: numValue } : row)));
   };
 

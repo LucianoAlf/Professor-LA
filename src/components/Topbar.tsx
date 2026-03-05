@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { QUARTERS } from '../constants';
 import { QuarterId } from '../types';
@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 
 export const Topbar: React.FC = () => {
   const { sbOpen, setSbOpen, curQ, setCurQ, setCurMonth, isLight, setIsLight } = useAppContext();
+  const [showLogoFallback, setShowLogoFallback] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -34,9 +35,18 @@ export const Topbar: React.FC = () => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="font-serif text-[19px] font-bold text-[var(--txt)] hidden sm:block">
-          Professor<span className="text-[var(--gold)]">+LA</span>
-        </div>
+        {showLogoFallback ? (
+          <div className="font-serif text-[19px] font-bold text-[var(--txt)] hidden sm:block">
+            Professor <span className="text-[var(--gold)]">+LA</span>
+          </div>
+        ) : (
+          <img
+            src="/logo.png"
+            alt="Professor +LA"
+            onError={() => setShowLogoFallback(true)}
+            className="hidden h-8 w-auto sm:block"
+          />
+        )}
         <div className="flex gap-1.5 ml-2">
           {(Object.keys(QUARTERS) as QuarterId[]).map(q => (
             <button
@@ -56,14 +66,12 @@ export const Topbar: React.FC = () => {
         <button 
           onClick={() => setIsLight(!isLight)}
           className="bg-[var(--surface)] border border-[var(--border)] rounded-full p-1.5 cursor-pointer transition-all duration-150 hover:border-[var(--gold)] text-[var(--txt)]"
-          title="Alternar tema"
         >
           {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </button>
         <button
           onClick={handleLogout}
           className="bg-[var(--surface)] border border-[var(--border)] rounded-full p-1.5 cursor-pointer transition-all duration-150 hover:border-[var(--gold)] text-[var(--txt)]"
-          title="Sair"
         >
           <LogOut className="w-4 h-4" />
         </button>

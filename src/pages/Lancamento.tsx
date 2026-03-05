@@ -7,6 +7,7 @@ import { useLancamentos } from '../hooks/useLancamentos';
 import { useSaveLancamentosMutation } from '../hooks/useMetricsMutations';
 import { useProfessoresByUnidade } from '../hooks/useProfessoresByUnidade';
 import { useTrimestreByCodigo, useUnidadeByCodigo } from '../hooks/useSelectionData';
+import { parseFlexibleNumber } from '../lib/number';
 
 interface LancamentoFormItem {
   professorUnidadeId: string;
@@ -27,7 +28,7 @@ const round = (value: number, decimals = 1) => {
 export const Lancamento: React.FC = () => {
   const { curUnit, curMonth, setCurMonth, curQ, anoLetivoId, cfg } = useAppContext();
   const [formRows, setFormRows] = useState<LancamentoFormItem[]>([]);
-  const [saveText, setSaveText] = useState('💾 Salvar');
+  const [saveText, setSaveText] = useState('Salvar');
 
   const unidadeData = useUnidadeByCodigo(curUnit);
   const trimestreData = useTrimestreByCodigo(anoLetivoId, curQ);
@@ -96,12 +97,12 @@ export const Lancamento: React.FC = () => {
       rows: formRows,
     });
 
-    setSaveText('✅ Salvo!');
-    setTimeout(() => setSaveText('💾 Salvar'), 1600);
+    setSaveText('Salvo!');
+    setTimeout(() => setSaveText('Salvar'), 1600);
   };
 
   const handleChange = (index: number, field: string, value: string) => {
-    const numValue = Number(value) || 0;
+    const numValue = parseFlexibleNumber(value, 0);
     setFormRows((prev) =>
       prev.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: numValue } : row))
     );
