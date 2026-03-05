@@ -18,19 +18,19 @@ export const Instrucoes: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3.5">
           <div className="bg-[rgba(45,90,160,0.12)] border border-[rgba(45,90,160,0.2)] rounded-lg p-3.5 text-center">
-            <div className="text-[11px] font-bold text-[#7EB9FF] tracking-[1px] uppercase mb-1.5">Q1</div>
-            <div className="text-[13px] text-[#fff] font-semibold">Março · Abril · Maio</div>
+            <div className="text-[11px] font-bold text-[var(--ink3)] tracking-[1px] uppercase mb-1.5">Q1</div>
+            <div className="text-[13px] text-[var(--txt)] font-semibold">Março · Abril · Maio</div>
           </div>
           <div className="bg-[rgba(45,90,160,0.12)] border border-[rgba(45,90,160,0.2)] rounded-lg p-3.5 text-center">
-            <div className="text-[11px] font-bold text-[#7EB9FF] tracking-[1px] uppercase mb-1.5">Q2</div>
-            <div className="text-[13px] text-[#fff] font-semibold">Junho · Julho · Agosto</div>
+            <div className="text-[11px] font-bold text-[var(--ink3)] tracking-[1px] uppercase mb-1.5">Q2</div>
+            <div className="text-[13px] text-[var(--txt)] font-semibold">Junho · Julho · Agosto</div>
           </div>
           <div className="bg-[rgba(45,90,160,0.12)] border border-[rgba(45,90,160,0.2)] rounded-lg p-3.5 text-center">
-            <div className="text-[11px] font-bold text-[#7EB9FF] tracking-[1px] uppercase mb-1.5">Q3</div>
-            <div className="text-[13px] text-[#fff] font-semibold">Set. · Outubro · Novembro</div>
+            <div className="text-[11px] font-bold text-[var(--ink3)] tracking-[1px] uppercase mb-1.5">Q3</div>
+            <div className="text-[13px] text-[var(--txt)] font-semibold">Set. · Outubro · Novembro</div>
           </div>
         </div>
-        <div className="px-3.5 py-3 bg-[rgba(200,151,58,0.07)] rounded-lg text-xs text-[rgba(255,255,255,0.45)] leading-[1.7]">
+        <div className="px-3.5 py-3 bg-[rgba(200,151,58,0.07)] rounded-lg text-xs text-[var(--txt2)] leading-[1.7]">
           Janeiro, Fevereiro e Dezembro ficam fora do ciclo de avaliação.
         </div>
       </div>
@@ -43,29 +43,29 @@ export const Instrucoes: React.FC = () => {
           <div className="flex gap-3.5 items-start">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-[var(--gold)] text-[var(--ink)]">1</div>
             <div>
-              <div className="text-[13px] font-bold text-[#fff] mb-1">⚙️ Configurar pesos</div>
-              <div className="text-xs text-[rgba(255,255,255,0.45)] leading-[1.65]">Verifique os pesos em Configurações. Somam 100%? A Comissão Pedagógica decide a distribuição.</div>
+              <div className="text-[13px] font-bold text-[var(--txt)] mb-1">⚙️ Configurar pesos</div>
+              <div className="text-xs text-[var(--txt2)] leading-[1.65]">Verifique os pesos em Configurações. Somam 100%? A Comissão Pedagógica decide a distribuição.</div>
             </div>
           </div>
           <div className="flex gap-3.5 items-start">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-[var(--ink3)] text-[#fff]">2</div>
             <div>
-              <div className="text-[13px] font-bold text-[#fff] mb-1">📥 Lançamento mensal</div>
-              <div className="text-xs text-[rgba(255,255,255,0.45)] leading-[1.65]">Ao final de cada mês: Retenção %, Conversão %, Média/Turma, Nota 360 e Qtd Alunos.</div>
+              <div className="text-[13px] font-bold text-[var(--txt)] mb-1">📥 Lançamento mensal</div>
+              <div className="text-xs text-[var(--txt2)] leading-[1.65]">Ao final de cada mês: Retenção %, Conversão %, Média/Turma, Nota 360 e Qtd Alunos.</div>
             </div>
           </div>
           <div className="flex gap-3.5 items-start">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-[var(--orange)] text-[#fff]">3</div>
             <div>
-              <div className="text-[13px] font-bold text-[#fff] mb-1">🎯 PDI trimestral</div>
-              <div className="text-xs text-[rgba(255,255,255,0.45)] leading-[1.65]">Uma vez por trimestre: nota 0–100 contextual, definida pela Comissão para cada professor.</div>
+              <div className="text-[13px] font-bold text-[var(--txt)] mb-1">🎯 PDI trimestral</div>
+              <div className="text-xs text-[var(--txt2)] leading-[1.65]">Uma vez por trimestre: nota 0–100 contextual, definida pela Comissão para cada professor.</div>
             </div>
           </div>
           <div className="flex gap-3.5 items-start">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-[var(--green)] text-[#fff]">4</div>
             <div>
-              <div className="text-[13px] font-bold text-[#fff] mb-1">📊 Ver resultados</div>
-              <div className="text-xs text-[rgba(255,255,255,0.45)] leading-[1.65]">Dashboard e Ranking atualizam automaticamente. Ao final do Q3, consulte Resultado Anual para o professor do ano.</div>
+              <div className="text-[13px] font-bold text-[var(--txt)] mb-1">📊 Ver resultados</div>
+              <div className="text-xs text-[var(--txt2)] leading-[1.65]">Dashboard e Ranking atualizam automaticamente. Ao final do Q3, consulte Resultado Anual para o professor do ano.</div>
             </div>
           </div>
         </div>
@@ -128,8 +128,8 @@ export const Instrucoes: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-2.5 p-2.5 border-t border-[rgba(255,255,255,0.06)] text-xs text-[rgba(255,255,255,0.38)]">
-          🔒 <strong className="text-[rgba(255,255,255,0.55)]">Prof. 360</strong> — corte comportamental ≥80. Não entra no cálculo do Health Score.
+        <div className="mt-2.5 p-2.5 border-t border-[var(--border)] text-xs text-[var(--txt2)]">
+          🔒 <strong className="text-[var(--txt)]">Prof. 360</strong> — corte comportamental ≥80. Não entra no cálculo do Health Score.
         </div>
       </div>
     </div>
