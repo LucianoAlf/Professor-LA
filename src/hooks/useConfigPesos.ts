@@ -65,15 +65,23 @@ export function useUpdateConfigPesosMutation() {
 
   return useMutation({
     mutationFn: async ({ anoLetivoId, payload }: UpdateConfigPesosInput) => {
+      // Primeiro busca o registro existente para obter o id
+      const { data: existing } = await supabase
+        .from('config_pesos')
+        .select('id')
+        .eq('ano_letivo_id', anoLetivoId)
+        .maybeSingle()
+
+      const upsertPayload = {
+        ...(existing?.id ? { id: existing.id } : {}),
+        ano_letivo_id: anoLetivoId,
+        ...payload,
+        atualizado_em: new Date().toISOString(),
+      }
+
       const { error } = await supabase
         .from('config_pesos')
-        .upsert(
-          {
-            ano_letivo_id: anoLetivoId,
-            ...payload,
-          },
-          { onConflict: 'ano_letivo_id' }
-        )
+        .upsert(upsertPayload, { onConflict: 'ano_letivo_id' })
 
       if (error) throw error
     },

@@ -128,6 +128,7 @@ export const Config: React.FC = () => {
   const [dragOverKpiId, setDragOverKpiId] = useState<string | null>(null);
   const [kpiForm, setKpiForm] = useState<KpiFormState>(DEFAULT_KPI_FORM);
   const [recalcBadge, setRecalcBadge] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!configQuery.data) return;
@@ -166,14 +167,7 @@ export const Config: React.FC = () => {
   const pesosValidos = Math.abs(totalPesos - 100) < 0.0001;
 
   const isLoading = configQuery.isLoading || kpiQuery.isLoading;
-  const isError =
-    configQuery.isError ||
-    kpiQuery.isError ||
-    updateConfigMutation.isError ||
-    syncKpisMutation.isError ||
-    createKpiMutation.isError ||
-    updateKpiMutation.isError ||
-    deleteKpiMutation.isError;
+  const isQueryError = configQuery.isError || kpiQuery.isError;
 
   const isPendingMutation =
     updateConfigMutation.isPending ||
@@ -204,6 +198,7 @@ export const Config: React.FC = () => {
   const handleFormNumberChange = (field: keyof ConfigFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: parseFlexibleNumber(value, 0) }));
     setSavedBadge(false);
+    setSaveError(null);
   };
 
   const handleKpiRowChange = (id: string, field: keyof KpiEditableRow, value: number | boolean) => {
@@ -218,6 +213,7 @@ export const Config: React.FC = () => {
       )
     );
     setSavedBadge(false);
+    setSaveError(null);
   };
 
   const moveKpiByDrop = (sourceId: string, targetId: string) => {
@@ -240,6 +236,7 @@ export const Config: React.FC = () => {
     setDraggingKpiId(null);
     setDragOverKpiId(null);
     setSavedBadge(false);
+    setSaveError(null);
   };
 
   const openCreateKpiModal = () => {
@@ -327,38 +324,46 @@ export const Config: React.FC = () => {
   const handleSave = async () => {
     if (!canSave || !anoLetivoId) return;
 
-    await Promise.all([
-      updateConfigMutation.mutateAsync({
-        anoLetivoId,
-        payload: {
-          benchmark_retencao: toDbWeight(form.benchmark_retencao),
-          benchmark_conversao: toDbWeight(form.benchmark_conversao),
-          nota_corte_360: Math.round(form.nota_corte_360),
-          media_turma_min: form.media_turma_min,
-          media_turma_max: form.media_turma_max,
-        },
-      }),
-      syncKpisMutation.mutateAsync({
-        anoLetivoId,
-        payload: kpiRows.map((row, index) => ({
-          id: row.id,
-          nome: row.nome,
-          slug: row.slug,
-          origem: row.origem,
-          campo_origem: row.campo_origem,
-          tipo_score: row.tipo_score,
-          min_ref: row.min_ref,
-          max_ref: row.max_ref,
-          entra_no_health_score: row.entra_no_health_score,
-          ativo: row.ativo,
-          ordem: (index + 1) * 10,
-          peso: toDbWeight(row.pesoUi),
-        })),
-      }),
-    ]);
+    setSaveError(null);
+    try {
+      await Promise.all([
+        updateConfigMutation.mutateAsync({
+          anoLetivoId,
+          payload: {
+            benchmark_retencao: toDbWeight(form.benchmark_retencao),
+            benchmark_conversao: toDbWeight(form.benchmark_conversao),
+            nota_corte_360: Math.round(form.nota_corte_360),
+            media_turma_min: form.media_turma_min,
+            media_turma_max: form.media_turma_max,
+          },
+        }),
+        syncKpisMutation.mutateAsync({
+          anoLetivoId,
+          payload: kpiRows.map((row, index) => ({
+            id: row.id,
+            ano_letivo_id: anoLetivoId,
+            nome: row.nome,
+            slug: row.slug,
+            origem: row.origem,
+            campo_origem: row.campo_origem,
+            tipo_score: row.tipo_score,
+            min_ref: row.min_ref,
+            max_ref: row.max_ref,
+            entra_no_health_score: row.entra_no_health_score,
+            ativo: row.ativo,
+            ordem: (index + 1) * 10,
+            peso: toDbWeight(row.pesoUi),
+          })),
+        }),
+      ]);
 
-    setSavedBadge(true);
-    setTimeout(() => setSavedBadge(false), 1800);
+      setSavedBadge(true);
+      setTimeout(() => setSavedBadge(false), 1800);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha ao salvar configuracoes.';
+      setSaveError(message);
+      console.error('Erro ao salvar configuracoes:', error);
+    }
   };
 
   const handleRecalculateQuarter = async () => {
@@ -389,7 +394,7 @@ export const Config: React.FC = () => {
     );
   }
 
-  if (isError) {
+  if (isQueryError) {
     return (
       <div className="animate-[fadeIn_0.25s_ease] p-5 md:px-7 md:py-6 pb-12">
         <div className="rounded-xl border border-[var(--red)]/30 bg-[rgba(166,28,28,0.10)] p-4 text-sm text-[var(--txt)]">
@@ -664,6 +669,12 @@ export const Config: React.FC = () => {
           Restaurar padrão
         </Button>
       </div>
+
+      {saveError && (
+        <div className="mt-2.5 rounded-xl border border-[var(--red)]/30 bg-[rgba(166,28,28,0.10)] p-3 text-xs text-[var(--txt)]">
+          Erro ao salvar configurações: {saveError}
+        </div>
+      )}
 
       {(recalcBadge || recalcQuarterMutation.isError) && (
         <div className="mt-2.5 flex flex-wrap items-center gap-2">

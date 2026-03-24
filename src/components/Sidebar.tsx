@@ -5,8 +5,11 @@ import { QUARTERS } from '../constants';
 import { Tooltip } from './ui/tooltip';
 
 export const Sidebar: React.FC = () => {
-  const { sbOpen, setSbOpen, sbCollapsed, setSbCollapsed, activePage, setActivePage, curQ } = useAppContext();
+  const { sbOpen, setSbOpen, sbCollapsed, setSbCollapsed, activePage, setActivePage, curQ, isLight } = useAppContext();
   const [showLogoFallback, setShowLogoFallback] = useState(false);
+  const logoSrc = isLight ? '/logo-escola.png' : '/logo-la-music-school1.png';
+  const logoSoloSrc = isLight ? '/logo-solo-ligth.png' : '/logo-solo-dark.png';
+  const activeLogoSrc = sbCollapsed ? logoSoloSrc : logoSrc;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart2, sec: 'Visão Geral' },
@@ -50,16 +53,11 @@ export const Sidebar: React.FC = () => {
           ) : (
             <div className={`flex ${sbCollapsed ? 'justify-center' : ''}`}>
               <img
-                src="/logo2.png"
+                src={activeLogoSrc}
                 alt="Professor +LA"
                 onError={() => setShowLogoFallback(true)}
-                className="h-8 w-auto"
+                className={sbCollapsed ? 'h-9 w-auto' : 'h-10 w-auto'}
               />
-            </div>
-          )}
-          {!sbCollapsed && (
-            <div className="text-[10px] text-[var(--txt3)] tracking-[1.5px] uppercase mt-2">
-              Professor+LA
             </div>
           )}
         </div>

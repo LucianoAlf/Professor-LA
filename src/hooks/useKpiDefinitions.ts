@@ -43,7 +43,7 @@ interface SyncKpisInput {
   payload: Array<
     Pick<
       KpiDefinition,
-      'id' | 'peso' | 'entra_no_health_score' | 'ativo' | 'ordem' | 'tipo_score' | 'min_ref' | 'max_ref' | 'origem' | 'campo_origem' | 'nome' | 'slug'
+      'id' | 'ano_letivo_id' | 'peso' | 'entra_no_health_score' | 'ativo' | 'ordem' | 'tipo_score' | 'min_ref' | 'max_ref' | 'origem' | 'campo_origem' | 'nome' | 'slug'
     >
   >
 }
