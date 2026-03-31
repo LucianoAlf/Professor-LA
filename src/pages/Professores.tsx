@@ -317,6 +317,8 @@ export const Professores: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['professor-count-by-unit'] })
       await queryClient.invalidateQueries({ queryKey: ['professores-admin'] })
       await queryClient.invalidateQueries({ queryKey: ['professores-by-unidade'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-data'] })
+      await queryClient.invalidateQueries({ queryKey: ['annual-data'] })
     },
   })
 

@@ -38,6 +38,7 @@ export function useAnnualData(curUnit: UnitId, anoLetivoId?: string) {
         .from('professor_unidade')
         .select('id, unidade_id, professor_id, professores:professor_id(id, nome)')
         .in('unidade_id', unidadeIdList)
+        .eq('ativo', true)
 
       if (professorUnidadeError) throw professorUnidadeError
 
