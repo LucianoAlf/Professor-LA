@@ -326,15 +326,24 @@ export const Config: React.FC = () => {
 
     setSaveError(null);
     try {
+      const updatedConfig = {
+        ...configQuery.data!,
+        benchmark_retencao: toDbWeight(form.benchmark_retencao),
+        benchmark_conversao: toDbWeight(form.benchmark_conversao),
+        nota_corte_360: Math.round(form.nota_corte_360),
+        media_turma_min: form.media_turma_min,
+        media_turma_max: form.media_turma_max,
+      };
+
       await Promise.all([
         updateConfigMutation.mutateAsync({
           anoLetivoId,
           payload: {
-            benchmark_retencao: toDbWeight(form.benchmark_retencao),
-            benchmark_conversao: toDbWeight(form.benchmark_conversao),
-            nota_corte_360: Math.round(form.nota_corte_360),
-            media_turma_min: form.media_turma_min,
-            media_turma_max: form.media_turma_max,
+            benchmark_retencao: updatedConfig.benchmark_retencao,
+            benchmark_conversao: updatedConfig.benchmark_conversao,
+            nota_corte_360: updatedConfig.nota_corte_360,
+            media_turma_min: updatedConfig.media_turma_min,
+            media_turma_max: updatedConfig.media_turma_max,
           },
         }),
         syncKpisMutation.mutateAsync({
@@ -356,6 +365,20 @@ export const Config: React.FC = () => {
           })),
         }),
       ]);
+
+      // Recalcular health scores de todos os trimestres e unidades com os novos pesos
+      const quarters: Array<'Q1' | 'Q2' | 'Q3'> = ['Q1', 'Q2', 'Q3'];
+      const allUnits = ['CG', 'RC', 'BA'];
+      await Promise.all(
+        quarters.map((q) =>
+          recalcQuarterMutation.mutateAsync({
+            anoLetivoId,
+            quarterCode: q,
+            unitCodes: allUnits,
+            configPesos: updatedConfig,
+          }).catch(() => {/* trimestre pode não existir ainda */})
+        )
+      );
 
       setSavedBadge(true);
       setTimeout(() => setSavedBadge(false), 1800);
